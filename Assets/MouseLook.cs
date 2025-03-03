@@ -29,5 +29,6 @@ public class MouseLook : MonoBehaviour
 
         //Rotate player's body transform for moving mouseX (mouse left and right)
         playerBody.Rotate(Vector3.up * mouseX);
+
     }
 }

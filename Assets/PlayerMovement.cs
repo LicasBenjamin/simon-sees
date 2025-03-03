@@ -35,5 +35,10 @@ public class PlayerMovement : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            print(transform.position);
+        }
     }
 }
