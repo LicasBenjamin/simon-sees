@@ -16,4 +16,17 @@ public class TileController : MonoBehaviour
     {
         
     }
+    public void Test()
+    {
+        print("parent function calling works!");
+    }
+    public void UpdateTileArray(int index)
+    {
+        if (!tilePlayerIsOn[index])
+        {
+            tilePlayerIsOn = new bool[9];
+            tilePlayerIsOn[index] = true;
+            print(string.Join(",", tilePlayerIsOn));
+        }
+    }
 }

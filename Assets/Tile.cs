@@ -22,7 +22,8 @@ public class Tile : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Player is on Tile: " + tileID);
+            //Debug.Log("Player is on Tile: " + tileID);
+            this.transform.parent.GetComponent<TileController>().UpdateTileArray(tileID-1);
         }
     }
 }
