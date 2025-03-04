@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TileController : MonoBehaviour
 {
-    bool[] tilePlayerIsOn = new bool[9];
+    public static bool[] tilePlayerIsOn = new bool[9];
     // Start is called before the first frame update
     void Start()
     {
@@ -26,7 +26,7 @@ public class TileController : MonoBehaviour
         {
             tilePlayerIsOn = new bool[9];
             tilePlayerIsOn[index] = true;
-            print(string.Join(",", tilePlayerIsOn));
+            //print(string.Join(",", tilePlayerIsOn));
         }
     }
 }

@@ -1,9 +1,11 @@
 using UnityEngine;
+using TMPro;
 
 public class WallClickRaycaster : MonoBehaviour {
     public float maxRayDistance = 50f; // Raycast distance
     public LayerMask wallLayer; 
-    public int score = 0; 
+    public int score = 0;
+    public TextMeshProUGUI displayText;
 
     void Update() {
         if (Input.GetMouseButtonDown(0)) {
@@ -27,7 +29,17 @@ public class WallClickRaycaster : MonoBehaviour {
                     string colorName = GetColorName(wallColor); 
 
                     score += 10;
-                    Debug.Log("Clicked on: " + wallName + " | Color: " + colorName + " | Score: " + score);
+                    //Debug.Log("Clicked on: " + wallName + " | Color: " + colorName + " | Score: " + score);
+                    int tileStandingOn = 0;
+                    for(int i = 0; i< TileController.tilePlayerIsOn.Length; i++)
+                    {
+                        if (TileController.tilePlayerIsOn[i])
+                        {
+                            tileStandingOn = i + 1;
+                        }
+                    }
+                    print("Looking at " + wallName + ", stepping on tile: "+tileStandingOn);
+                    displayText.text = "Looking at " + wallName + ", stepping on tile: " + tileStandingOn;
                 }
             }
         }
