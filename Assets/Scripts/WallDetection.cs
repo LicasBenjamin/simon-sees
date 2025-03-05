@@ -15,8 +15,7 @@ public class WallDetection : MonoBehaviour {
 
     void Update() {
         UpdateColorText(); // Always update reticle UI
-        if (Input.GetMouseButtonDown(0)) // Detect wall only on mouse click
-        {
+        if (Input.GetMouseButtonDown(0)) { // Detect wall only on mouse click
             DetectWallOnClick();
         }
     }
@@ -59,11 +58,11 @@ public class WallDetection : MonoBehaviour {
 
                     // Store clicked color
                     lastClickedColor = colorName;
-                    Debug.Log($"Wall Clicked! Color: {colorName}");
+                    Debug.Log($"Wall Clicked -- Color: {colorName}");
                 }
             }
         } else {
-            Debug.Log("Click missed! No wall detected.");
+            Debug.Log("Click missed -- No wall detected.");
         }
     }
 
