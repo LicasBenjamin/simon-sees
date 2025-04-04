@@ -57,7 +57,7 @@ public class WallDetection : MonoBehaviour {
 
                 Debug.Log($"Clicked on: {wallName} | Color: {colorName} | Score: {score} | Tile: {tileStandingOn}");
 
-                announcer.AnnounceWallInteraction(colorName, tileStandingOn);
+                announcer.CheckTaskCompletion(colorName, tileStandingOn);
             }
         }
         else {
