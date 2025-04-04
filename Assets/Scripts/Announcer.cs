@@ -10,7 +10,9 @@ public class Announcer : MonoBehaviour {
     private bool taskActive = false;
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
-    private int totalTiles = 9;  // Adjust according to your actual tile count
+    private int totalTiles = 9;  // Adjust based on actual tile count
+
+    private float taskDuration = 10f;
 
     void Start() {
         WelcomePlayer();
@@ -31,7 +33,7 @@ public class Announcer : MonoBehaviour {
         
         taskActive = true;
 
-        Invoke(nameof(CheckIfTaskFailed), displayTime);
+        Invoke(nameof(CheckIfTaskFailed), taskDuration);
     }
 
     public void CheckTaskCompletion(string wallColor, int tileNumber) {
@@ -40,6 +42,8 @@ public class Announcer : MonoBehaviour {
 
         if (wallColor == currentTargetWallColor && tileNumber == currentTargetTile) {
             TaskSucceeded();
+        } else {
+            TaskFailed();
         }
     }
 
@@ -57,7 +61,12 @@ public class Announcer : MonoBehaviour {
         if (!taskActive)
             return;
 
+        TaskFailed();
+    }
+
+    void TaskFailed() {
         taskActive = false;
+        CancelInvoke(nameof(CheckIfTaskFailed));
 
         announcerText.text = "Player has failed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);
