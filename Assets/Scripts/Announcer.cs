@@ -68,7 +68,7 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
-        announcerText.text = "Player has failed this task.";
+        announcerText.text = "Subject has failed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);
 
         Invoke(nameof(GiveNewTask), displayTime);
