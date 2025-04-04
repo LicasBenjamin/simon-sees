@@ -1,81 +1,83 @@
 using UnityEngine;
-using TMPro; // Required for TextMeshPro
+using TMPro;
 
 public class WallDetection : MonoBehaviour {
-    public float maxRayDistance = 100f; // Raycast distance
-    public LayerMask wallLayer; // Assign "Wall" layer in the Inspector
-    public TextMeshProUGUI colorText; // Assign this in the Inspector (UI next to the reticle)
+    public float maxRayDistance = 100f;
+    public LayerMask wallLayer;
+    public TextMeshProUGUI colorText;
 
     private Camera mainCamera;
-    private string lastClickedColor = "None"; // Stores last clicked color
+    private int score = 0;
 
     void Start() {
-        mainCamera = Camera.main; // Get the main camera reference
+        mainCamera = Camera.main;
     }
 
     void Update() {
-        UpdateColorText(); // Always update reticle UI
-        if (Input.GetMouseButtonDown(0)) { // Detect wall only on mouse click
-            DetectWallOnClick();
+        UpdateReticleUI();
+
+        if (Input.GetMouseButtonDown(0)) {
+            HandleWallClick();
         }
     }
 
-    // Always updates ColorText UI based on what the reticle is looking at
-    void UpdateColorText() {
+    void UpdateReticleUI() {
         Ray ray = mainCamera.ScreenPointToRay(new Vector2(Screen.width / 2, Screen.height / 2));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxRayDistance, wallLayer)) {
-            if (hit.collider.CompareTag("Wall")) {
-                Renderer wallRenderer = hit.collider.GetComponent<Renderer>();
-                if (wallRenderer != null) {
-                    Color wallColor = wallRenderer.material.color;
-                    string hexColor = GetHexColor(wallColor);
-                    string colorName = GetColorName(hexColor);
+        if (Physics.Raycast(ray, out hit, maxRayDistance, wallLayer) && hit.collider.CompareTag("Wall")) {
+            Renderer wallRenderer = hit.collider.GetComponent<Renderer>();
+            if (wallRenderer != null) {
+                Color wallColor = wallRenderer.material.color;
+                string colorName = GetColorName(wallColor);
 
-                    // Update UI with detected color
-                    colorText.text = colorName;
-                    colorText.color = wallColor; // Change text color to match wall
-                }
+                colorText.text = colorName;
+                colorText.color = wallColor;
             }
-        } else {
-            colorText.text = ""; // Hide text if no wall detected
+        }
+        else {
+            colorText.text = "";
         }
     }
 
-    // Detects wall color only when user clicks
-    void DetectWallOnClick() {
+    void HandleWallClick() {
         Ray ray = mainCamera.ScreenPointToRay(new Vector2(Screen.width / 2, Screen.height / 2));
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxRayDistance, wallLayer)) {
-            if (hit.collider.CompareTag("Wall")) {
-                Renderer wallRenderer = hit.collider.GetComponent<Renderer>();
-                if (wallRenderer != null) {
-                    Color wallColor = wallRenderer.material.color;
-                    string hexColor = GetHexColor(wallColor);
-                    string colorName = GetColorName(hexColor);
+        if (Physics.Raycast(ray, out hit, maxRayDistance, wallLayer) && hit.collider.CompareTag("Wall")) {
+            Renderer wallRenderer = hit.collider.GetComponent<Renderer>();
+            if (wallRenderer != null) {
+                string wallName = hit.collider.name;
+                Color wallColor = wallRenderer.material.color;
+                string colorName = GetColorName(wallColor);
 
-                    // Store clicked color
-                    lastClickedColor = colorName;
-                    Debug.Log($"Wall Clicked -- Color: {colorName}");
-                }
+                score += 10;
+                int tileStandingOn = GetCurrentTile();
+
+                Debug.Log($"Clicked on: {wallName} | Color: {colorName} | Score: {score} | Tile: {tileStandingOn}");
             }
-        } else {
+        }
+        else {
             Debug.Log("Click missed -- No wall detected.");
         }
     }
 
-    // Converts Color to HEX
-    string GetHexColor(Color color) {
-        int r = Mathf.RoundToInt(color.r * 255);
-        int g = Mathf.RoundToInt(color.g * 255);
-        int b = Mathf.RoundToInt(color.b * 255);
-        return $"{r:X2}{g:X2}{b:X2}"; // Converts to uppercase hex
+    int GetCurrentTile() {
+        for (int i = 0; i < TileController.tilePlayerIsOn.Length; i++) {
+            if (TileController.tilePlayerIsOn[i])
+                return i + 1;
+        }
+
+        return 0; // Default if no tile detected
     }
 
-    // Matches HEX to Color Name
-    string GetColorName(string hexColor) {
+    string GetColorName(Color color) {
+        if (color == Color.red) return "Red";
+        if (color == Color.blue) return "Blue";
+        if (color == Color.green) return "Green";
+        if (color == Color.yellow) return "Yellow";
+
+        string hexColor = ColorUtility.ToHtmlStringRGB(color);
         switch (hexColor) {
             case "001992": return "Blue";
             case "840000": return "Red";
