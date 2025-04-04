@@ -5,6 +5,7 @@ public class WallDetection : MonoBehaviour {
     public float maxRayDistance = 100f;
     public LayerMask wallLayer;
     public TextMeshProUGUI colorText;
+    public Announcer announcer; // Assign in inspector
 
     private Camera mainCamera;
     private int score = 0;
@@ -55,6 +56,8 @@ public class WallDetection : MonoBehaviour {
                 int tileStandingOn = GetCurrentTile();
 
                 Debug.Log($"Clicked on: {wallName} | Color: {colorName} | Score: {score} | Tile: {tileStandingOn}");
+
+                announcer.AnnounceWallInteraction(colorName, tileStandingOn);
             }
         }
         else {

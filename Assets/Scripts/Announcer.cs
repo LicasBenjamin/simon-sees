@@ -1,21 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
 public class Announcer : MonoBehaviour {
     public TextMeshProUGUI announcerText;
-    public float displayTime = 5f; // How long to show the message
+    public float displayTime = 5f;
 
-    // Start is called before the first frame update
     void Start() {
-        // Setting the "welcome" message
-        announcerText.text = "What up lil bitch";
+        announcerText.text = "Welcome, test subject.";
+        Invoke("HideAnnouncer", displayTime);
+    }
+
+    public void AnnounceWallInteraction(string wallColor, int tileNumber) {
+        announcerText.text = $"Test subject has viewed the {wallColor.ToLower()} wall and stood on tile {tileNumber}.";
+        announcerText.gameObject.transform.parent.gameObject.SetActive(true);
+
+        CancelInvoke("HideAnnouncer"); // Cancel previous hide if any
         Invoke("HideAnnouncer", displayTime);
     }
 
     void HideAnnouncer() {
-        // Deactivate game object to hide
         announcerText.gameObject.transform.parent.gameObject.SetActive(false);
     }
 }
