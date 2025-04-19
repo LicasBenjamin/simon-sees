@@ -1284,6 +1284,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   colorText: {fileID: 647172972}
+  announcer: {fileID: 891919358}
 --- !u!1 &339641459
 GameObject:
   m_ObjectHideFlags: 0
@@ -1768,7 +1769,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -257.5}
+  m_AnchoredPosition: {x: 0, y: -207}
   m_SizeDelta: {x: -40, y: -535}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &412852139

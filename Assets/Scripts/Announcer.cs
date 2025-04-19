@@ -15,12 +15,13 @@ public class Announcer : MonoBehaviour {
     private float taskDuration = 10f;
 
     void Start() {
+        // Force activation at game start to ensure visibility
+        announcerText.transform.parent.gameObject.SetActive(true);
         WelcomePlayer();
     }
 
     void WelcomePlayer() {
-        announcerText.text = "Welcome, Test Subject.";
-        announcerText.transform.parent.gameObject.SetActive(true);
+        SetAnnouncerText("Welcome, Test Subject.");
         Invoke(nameof(GiveNewTask), displayTime);
     }
 
@@ -28,9 +29,8 @@ public class Announcer : MonoBehaviour {
         currentTargetWallColor = colors[Random.Range(0, colors.Length)];
         currentTargetTile = Random.Range(1, totalTiles + 1);
 
-        announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
-        announcerText.transform.parent.gameObject.SetActive(true);
-        
+        SetAnnouncerText($"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.");
+
         taskActive = true;
 
         Invoke(nameof(CheckIfTaskFailed), taskDuration);
@@ -51,9 +51,7 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
-        announcerText.text = "Subject has completed this task.";
-        announcerText.transform.parent.gameObject.SetActive(true);
-
+        SetAnnouncerText("Subject has completed this task.");
         Invoke(nameof(GiveNewTask), displayTime);
     }
 
@@ -68,9 +66,21 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
-        announcerText.text = "Subject has failed this task.";
+        SetAnnouncerText("Player has failed this task.");
+        Invoke(nameof(GiveNewTask), displayTime);
+    }
+
+    void SetAnnouncerText(string message) {
+        announcerText.text = message;
+
+        // Always ensure parent UI is active before displaying text
         announcerText.transform.parent.gameObject.SetActive(true);
 
-        Invoke(nameof(GiveNewTask), displayTime);
+        CancelInvoke(nameof(HideAnnouncer));
+        Invoke(nameof(HideAnnouncer), displayTime);
+    }
+
+    void HideAnnouncer() {
+        announcerText.transform.parent.gameObject.SetActive(false);
     }
 }
