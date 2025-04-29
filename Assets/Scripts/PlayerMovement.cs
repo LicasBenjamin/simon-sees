@@ -63,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
             staminaRegenRate = 15f; //restore back stamina regen amt
         }
 
-        if (isRunning && staminaRegenRate != 5f)
+        if (isRunning && staminaRegenRate != 5f && (x > 0 || z > 0))
         {
             //Debug.Log("Running");
             controller.Move(move * speed * 1.5f * Time.deltaTime);

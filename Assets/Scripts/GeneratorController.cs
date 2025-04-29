@@ -8,12 +8,13 @@ public class GeneratorController : MonoBehaviour
     public GameObject[] ceilingLightCylinders; // Assign the ceiling light cylinder objects
     public Light generatorSpotlight; // Assign the generator's spotlight
     public Light[] generatorPointLights; // Assign the generator's point lights
-    public float generatorDuration = 10f; // Duration generator stays on
+    public float generatorDuration = 30f; // Duration generator stays on
     public AudioSource startSound; // Sound for starting the generator
     public AudioSource idleSound; // Looping sound when the generator is active
     public AudioSource stopSound; // Sound for turning off the generator
     public TextMeshProUGUI interactPrompt; // UI prompt for interaction
     public AudioSource ceilingAudio; // Assign the ceiling AudioSource in the Inspector
+    public Material lightMaterial; //Added a light material to be toggled for faster execution
 
 
     private bool isNearGenerator = false; // Tracks if player is near the generator
@@ -31,8 +32,10 @@ public class GeneratorController : MonoBehaviour
         // Ensure ceiling light cylinders and spotlights are OFF initially
         foreach (GameObject lightCylinder in ceilingLightCylinders)
         {
-            lightCylinder.SetActive(false);
+            //lightCylinder.SetActive(false);
+            //lightCylinder.GetComponent<Material>().DisableKeyword("_EMISSION");
         }
+        lightMaterial.DisableKeyword("_EMISSION");
         foreach (Light spotlight in ceilingSpotlights)
         {
             spotlight.enabled = false;
@@ -74,8 +77,10 @@ public class GeneratorController : MonoBehaviour
         // Enable ceiling lights and their cylinders
         foreach (GameObject lightCylinder in ceilingLightCylinders)
         {
-            lightCylinder.SetActive(true);
+            //lightCylinder.SetActive(true);
+            //lightCylinder.GetComponent<Material>().EnableKeyword("_EMISSION");
         }
+        lightMaterial.EnableKeyword("_EMISSION");
         foreach (Light spotlight in ceilingSpotlights)
         {
             spotlight.enabled = true;
@@ -107,8 +112,10 @@ public class GeneratorController : MonoBehaviour
         // Disable ceiling lights and their cylinders
         foreach (GameObject lightCylinder in ceilingLightCylinders)
         {
-            lightCylinder.SetActive(false);
+            //lightCylinder.SetActive(false);
+            //lightCylinder.GetComponent<Material>().DisableKeyword("_EMISSION");
         }
+        lightMaterial.DisableKeyword("_EMISSION");
         foreach (Light spotlight in ceilingSpotlights)
         {
             spotlight.enabled = false;

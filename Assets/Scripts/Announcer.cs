@@ -5,14 +5,14 @@ public class Announcer : MonoBehaviour {
     public TextMeshProUGUI announcerText;
     public float displayTime = 5f;
 
-    private string currentTargetWallColor;
-    private int currentTargetTile;
-    private bool taskActive = false;
+    public string currentTargetWallColor;
+    public int currentTargetTile;
+    public bool taskActive = false;
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;  // Adjust based on actual tile count
 
-    private float taskDuration = 10f;
+    private float taskDuration = 20f;
 
     void Start() {
         // Force activation at game start to ensure visibility
