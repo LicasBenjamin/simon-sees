@@ -7,24 +7,41 @@ public class Announcer : MonoBehaviour {
     public float displayTime = 5f;
 
     [Header("Task Settings")]
-    private string currentTargetWallColor;
-    private int currentTargetTile;
-    private bool taskActive = false;
+    public string currentTargetWallColor;
+    public int currentTargetTile;
+    public bool taskActive = false;
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
-    private float taskDuration = 10f;
+    private float taskDuration = 30f;
 
     [Header("Generator Failure Link")]
     public GeneratorController generatorController;
     public float failureChance = 0.5f;
 
+    [Header("Task Time Running Out Sound")]
+    public AudioSource taskAudioSource;
+
     public string CurrentTargetWallColor => currentTargetWallColor;
     public int CurrentTargetTile => currentTargetTile;
     public bool TaskActive => taskActive;
 
+    public bool isFirstTimeCalled = false;
+
+    //Temporarily disabling this being called on start, replaced with a callable function to begin the announcer
+    /**
     void Start() {
         announcerText.transform.parent.gameObject.SetActive(true);
+        WelcomePlayer();
+    }*/
+    private void Start()
+    {
+        announcerText.transform.parent.gameObject.SetActive(false);
+    }
+    public void beginAnnouncer()
+    {
+        announcerText.transform.parent.gameObject.SetActive(true);
+        isFirstTimeCalled = true;
         WelcomePlayer();
     }
 
@@ -37,6 +54,8 @@ public class Announcer : MonoBehaviour {
     void GiveNewTask() {
         currentTargetWallColor = colors[Random.Range(0, colors.Length)];
         currentTargetTile = Random.Range(1, totalTiles + 1);
+
+        taskAudioSource.Play();
 
         announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
         announcerText.transform.parent.gameObject.SetActive(true);
@@ -59,6 +78,8 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
+        taskAudioSource.Stop();
+
         announcerText.text = "Subject has completed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);
 
@@ -73,6 +94,8 @@ public class Announcer : MonoBehaviour {
     void TaskFailed() {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
+
+        taskAudioSource.Stop();
 
         announcerText.text = "Player has failed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);

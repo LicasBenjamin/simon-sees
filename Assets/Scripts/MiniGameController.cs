@@ -11,6 +11,7 @@ public class MiniGameController : MonoBehaviour {
     public float lineSpeed = 400f;
     public int maxMisses = 3;
     public AudioSource errorSound;
+    public AudioSource hitSound;
     public GeneratorController generator;
 
     private List<GameObject> activeTargets = new List<GameObject>();
@@ -68,7 +69,7 @@ public class MiniGameController : MonoBehaviour {
 
         if (hit) {
             Debug.Log("Remaining targets: " + activeTargets.Count);
-
+            hitSound.Play();
             if (activeTargets.Count == 0) {
                 Debug.Log("All targets cleared. Completing mini-game.");
                 CompleteMiniGame();

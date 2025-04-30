@@ -16,6 +16,7 @@ public class GeneratorController : MonoBehaviour {
     public AudioSource stopSound;
     public AudioSource ceilingAudio;
     public AudioSource errorSound;
+    public AudioSource powerDownAudio;
 
     [Header("UI")]
     public TextMeshProUGUI interactPrompt;
@@ -26,9 +27,12 @@ public class GeneratorController : MonoBehaviour {
 
     private bool isNearGenerator = false;
     private bool isGeneratorOn = false;
-    private bool generatorBroken = false;
+    private bool generatorBroken = true; //Setting true to introduce the minigame to the player
     private bool miniGameActive = false;
     private bool hasBeenTurnedOnOnce = false;
+
+    [Header("Announcer Reference")]
+    public Announcer announcer;
 
     void Start() {
         generatorSpotlight.enabled = true;
@@ -74,6 +78,7 @@ public class GeneratorController : MonoBehaviour {
 
         idleSound.Stop();
         ceilingAudio.Stop();
+        powerDownAudio.Play();
         stopSound.Play();
 
         lightMaterial.DisableKeyword("_EMISSION");
@@ -108,6 +113,12 @@ public class GeneratorController : MonoBehaviour {
         miniGameUI.SetActive(false);
         miniGameActive = false;
         generatorBroken = false;
+
+        //Begin announcer if this is the first minigame played
+        if (!announcer.isFirstTimeCalled)
+        {
+            announcer.beginAnnouncer();
+        }
 
         if (interactPrompt != null) {
             interactPrompt.text = "Generator Fixed!";
@@ -171,7 +182,7 @@ public class GeneratorController : MonoBehaviour {
         yield return new WaitForSeconds(stopSound.clip.length);
 
         ceilingAudio.Stop();
-
+        powerDownAudio.Play();
         // New logic: treat shutdown as a breakdown
         isGeneratorOn = false;
         generatorBroken = true;
