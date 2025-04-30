@@ -11,7 +11,6 @@ public class MiniGameController : MonoBehaviour {
     public float lineSpeed = 400f;
     public int maxMisses = 3;
     public AudioSource errorSound;
-    public AudioSource hitSound;
     public GeneratorController generator;
 
     private List<GameObject> activeTargets = new List<GameObject>();
@@ -52,7 +51,7 @@ public class MiniGameController : MonoBehaviour {
         bool hit = false;
         float lineX = line.localPosition.x;
 
-        foreach (var target in new List<GameObject>(activeTargets)) { // safe copy
+        foreach (var target in new List<GameObject>(activeTargets)) {
             if (target == null) continue;
 
             RectTransform targetRect = target.GetComponent<RectTransform>();
@@ -61,15 +60,18 @@ public class MiniGameController : MonoBehaviour {
 
             if (lineX >= targetX - halfWidth && lineX <= targetX + halfWidth) {
                 Debug.Log("Target HIT: " + target.name);
+
+                // ✅ Remove target before fading it
+                activeTargets.Remove(target);
                 StartCoroutine(FadeAndRemoveTarget(target));
-                activeTargets.Remove(target); // ✅ critical fix
+
                 hit = true;
             }
         }
 
         if (hit) {
             Debug.Log("Remaining targets: " + activeTargets.Count);
-            hitSound.Play();
+
             if (activeTargets.Count == 0) {
                 Debug.Log("All targets cleared. Completing mini-game.");
                 CompleteMiniGame();
@@ -95,8 +97,21 @@ public class MiniGameController : MonoBehaviour {
 
     void ResetMiniGame() {
         Debug.Log("Resetting mini-game.");
+
         foreach (var obj in activeTargets) {
-            if (obj != null) Destroy(obj);
+            if (obj != null) {
+                // Reset outline before destroy
+                Image[] images = obj.GetComponentsInChildren<Image>(true);
+                foreach (Image img in images) {
+                    if (img.gameObject.name == "Outline") {
+                        Color c = img.color;
+                        c.a = 0f;
+                        img.color = c;
+                    }
+                }
+
+                Destroy(obj);
+            }
         }
 
         activeTargets.Clear();
@@ -109,9 +124,26 @@ public class MiniGameController : MonoBehaviour {
 
         for (int i = 0; i < targetCount; i++) {
             GameObject newTarget = Instantiate(targetPrefab, barArea);
+
+            if (newTarget == null) {
+                Debug.LogError("Failed to instantiate targetPrefab!");
+                continue;
+            }
+
             RectTransform rect = newTarget.GetComponent<RectTransform>();
             float xPos = -barWidth / 2 + padding + (spacing * i);
             rect.localPosition = new Vector3(xPos, 0f, 0f);
+
+            // Reset outline on new target
+            Image[] images = newTarget.GetComponentsInChildren<Image>(true);
+            foreach (Image img in images) {
+                if (img.gameObject.name == "Outline") {
+                    Color c = img.color;
+                    c.a = 0f;
+                    img.color = c;
+                }
+            }
+
             activeTargets.Add(newTarget);
         }
 
@@ -122,20 +154,31 @@ public class MiniGameController : MonoBehaviour {
 
     IEnumerator FadeAndRemoveTarget(GameObject target) {
         Debug.Log("Starting fade and destroy for: " + target.name);
-        Image img = target.GetComponent<Image>();
-        if (img == null) {
+
+        // Reset outline before fading
+        Image[] outlines = target.GetComponentsInChildren<Image>(true);
+        foreach (Image img in outlines) {
+            if (img.gameObject.name == "Outline") {
+                Color c = img.color;
+                c.a = 0f;
+                img.color = c;
+            }
+        }
+
+        Image imgMain = target.GetComponent<Image>();
+        if (imgMain == null) {
             Destroy(target);
             yield break;
         }
 
         float duration = 0.25f;
         float t = 0f;
-        Color originalColor = img.color;
+        Color originalColor = imgMain.color;
 
         while (t < duration) {
             t += Time.deltaTime;
             float alpha = Mathf.Lerp(1f, 0f, t / duration);
-            img.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+            imgMain.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
             yield return null;
         }
 
@@ -152,16 +195,15 @@ public class MiniGameController : MonoBehaviour {
             RectTransform targetRect = target.GetComponent<RectTransform>();
             float targetX = targetRect.localPosition.x;
             float halfWidth = targetRect.rect.width / 2f;
-
             bool isHovered = (lineX >= targetX - halfWidth && lineX <= targetX + halfWidth);
 
-            Transform outlineChild = target.transform.Find("Outline");
-            if (outlineChild != null) {
-                Image outlineImg = outlineChild.GetComponent<Image>();
-                if (outlineImg != null) {
-                    Color c = outlineImg.color;
+            // Update all outlines only if still active
+            Image[] images = target.GetComponentsInChildren<Image>(true);
+            foreach (Image img in images) {
+                if (img.gameObject.name == "Outline") {
+                    Color c = img.color;
                     c.a = isHovered ? 1f : 0f;
-                    outlineImg.color = c;
+                    img.color = c;
                 }
             }
         }
