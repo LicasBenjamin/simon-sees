@@ -2,26 +2,35 @@ using UnityEngine;
 using TMPro;
 
 public class Announcer : MonoBehaviour {
+    [Header("UI")]
     public TextMeshProUGUI announcerText;
     public float displayTime = 5f;
 
-    public string currentTargetWallColor;
-    public int currentTargetTile;
-    public bool taskActive = false;
+    [Header("Task Settings")]
+    private string currentTargetWallColor;
+    private int currentTargetTile;
+    private bool taskActive = false;
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
-    private int totalTiles = 9;  // Adjust based on actual tile count
+    private int totalTiles = 9;
+    private float taskDuration = 10f;
 
-    private float taskDuration = 20f;
+    [Header("Generator Failure Link")]
+    public GeneratorController generatorController;
+    public float failureChance = 0.5f;
+
+    public string CurrentTargetWallColor => currentTargetWallColor;
+    public int CurrentTargetTile => currentTargetTile;
+    public bool TaskActive => taskActive;
 
     void Start() {
-        // Force activation at game start to ensure visibility
         announcerText.transform.parent.gameObject.SetActive(true);
         WelcomePlayer();
     }
 
     void WelcomePlayer() {
-        SetAnnouncerText("Welcome, Test Subject.");
+        announcerText.text = "Welcome, Test Subject.";
+        announcerText.transform.parent.gameObject.SetActive(true);
         Invoke(nameof(GiveNewTask), displayTime);
     }
 
@@ -29,16 +38,15 @@ public class Announcer : MonoBehaviour {
         currentTargetWallColor = colors[Random.Range(0, colors.Length)];
         currentTargetTile = Random.Range(1, totalTiles + 1);
 
-        SetAnnouncerText($"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.");
+        announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
+        announcerText.transform.parent.gameObject.SetActive(true);
 
         taskActive = true;
-
         Invoke(nameof(CheckIfTaskFailed), taskDuration);
     }
 
     public void CheckTaskCompletion(string wallColor, int tileNumber) {
-        if (!taskActive)
-            return;
+        if (!taskActive) return;
 
         if (wallColor == currentTargetWallColor && tileNumber == currentTargetTile) {
             TaskSucceeded();
@@ -51,14 +59,14 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
-        SetAnnouncerText("Subject has completed this task.");
+        announcerText.text = "Subject has completed this task.";
+        announcerText.transform.parent.gameObject.SetActive(true);
+
         Invoke(nameof(GiveNewTask), displayTime);
     }
 
     void CheckIfTaskFailed() {
-        if (!taskActive)
-            return;
-
+        if (!taskActive) return;
         TaskFailed();
     }
 
@@ -66,21 +74,27 @@ public class Announcer : MonoBehaviour {
         taskActive = false;
         CancelInvoke(nameof(CheckIfTaskFailed));
 
-        SetAnnouncerText("Player has failed this task.");
-        Invoke(nameof(GiveNewTask), displayTime);
-    }
-
-    void SetAnnouncerText(string message) {
-        announcerText.text = message;
-
-        // Always ensure parent UI is active before displaying text
+        announcerText.text = "Player has failed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);
 
-        CancelInvoke(nameof(HideAnnouncer));
-        Invoke(nameof(HideAnnouncer), displayTime);
-    }
+        Debug.Log("Task failed.");
 
-    void HideAnnouncer() {
-        announcerText.transform.parent.gameObject.SetActive(false);
+        if (generatorController != null) {
+            if (generatorController.IsGeneratorOn()) {
+                float roll = Random.value;
+                Debug.Log($"Failure chance roll: {roll} (threshold: {failureChance})");
+
+                if (roll < failureChance) {
+                    Debug.Log("Announcer decided to break the generator.");
+                    generatorController.BreakGenerator();
+                }
+            } else {
+                Debug.Log("Generator is already off. Skipping break attempt.");
+            }
+        } else {
+            Debug.LogWarning("generatorController is NULL in Announcer!");
+        }
+
+        Invoke(nameof(GiveNewTask), displayTime);
     }
 }

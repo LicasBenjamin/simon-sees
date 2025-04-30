@@ -2,150 +2,192 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 
-public class GeneratorController : MonoBehaviour
-{
-    public Light[] ceilingSpotlights; // Assign ceiling spotlights in the Inspector
-    public GameObject[] ceilingLightCylinders; // Assign the ceiling light cylinder objects
-    public Light generatorSpotlight; // Assign the generator's spotlight
-    public Light[] generatorPointLights; // Assign the generator's point lights
-    public float generatorDuration = 30f; // Duration generator stays on
-    public AudioSource startSound; // Sound for starting the generator
-    public AudioSource idleSound; // Looping sound when the generator is active
-    public AudioSource stopSound; // Sound for turning off the generator
-    public TextMeshProUGUI interactPrompt; // UI prompt for interaction
-    public AudioSource ceilingAudio; // Assign the ceiling AudioSource in the Inspector
-    public Material lightMaterial; //Added a light material to be toggled for faster execution
+public class GeneratorController : MonoBehaviour {
+    [Header("Lighting")]
+    public Light[] ceilingSpotlights;
+    public GameObject[] ceilingLightCylinders;
+    public Light generatorSpotlight;
+    public Light[] generatorPointLights;
+    public Material lightMaterial;
 
+    [Header("Audio")]
+    public AudioSource startSound;
+    public AudioSource idleSound;
+    public AudioSource stopSound;
+    public AudioSource ceilingAudio;
+    public AudioSource errorSound;
 
-    private bool isNearGenerator = false; // Tracks if player is near the generator
-    private bool isGeneratorOn = false; // Tracks if the generator is active
+    [Header("UI")]
+    public TextMeshProUGUI interactPrompt;
+    public GameObject miniGameUI;
 
-    private void Start()
-    {
-        // Ensure generator lights are ON initially
+    [Header("Settings")]
+    public float generatorDuration = 30f;
+
+    private bool isNearGenerator = false;
+    private bool isGeneratorOn = false;
+    private bool generatorBroken = false;
+    private bool miniGameActive = false;
+    private bool hasBeenTurnedOnOnce = false; // ✅ New flag
+
+    void Start() {
         generatorSpotlight.enabled = true;
-        foreach (Light pointLight in generatorPointLights)
-        {
+        foreach (Light pointLight in generatorPointLights) {
             pointLight.enabled = true;
         }
 
-        // Ensure ceiling light cylinders and spotlights are OFF initially
-        foreach (GameObject lightCylinder in ceilingLightCylinders)
-        {
-            //lightCylinder.SetActive(false);
-            //lightCylinder.GetComponent<Material>().DisableKeyword("_EMISSION");
-        }
         lightMaterial.DisableKeyword("_EMISSION");
-        foreach (Light spotlight in ceilingSpotlights)
-        {
+        foreach (Light spotlight in ceilingSpotlights) {
             spotlight.enabled = false;
         }
 
-        // Interaction prompt is hidden initially
         interactPrompt.gameObject.SetActive(false);
+        miniGameUI.SetActive(false);
     }
 
-    private void Update()
-    {
-        // Check for interaction when the player is near and generator is off
-        if (isNearGenerator && !isGeneratorOn && Input.GetKeyDown(KeyCode.E))
-        {
-            StartCoroutine(TurnOnGenerator());
-        }
-    }
+    void Update() {
+        if (isNearGenerator && Input.GetKeyDown(KeyCode.E)) {
+            Debug.Log("E pressed near generator");
 
-    private IEnumerator TurnOnGenerator()
-    {
-        // Play start sound
-        startSound.Play();
-        yield return new WaitForSeconds(startSound.clip.length); // Wait for start sound to finish
-
-        // Turn on generator
-        isGeneratorOn = true;
-
-        // Turn off generator-specific lights
-        generatorSpotlight.enabled = false;
-        foreach (Light pointLight in generatorPointLights)
-        {
-            pointLight.enabled = false;
-        }
-
-        // Enable ceiling audio and play idle sound
-        ceilingAudio.Play(); // Start ceiling audio
-        idleSound.Play();
-
-        // Enable ceiling lights and their cylinders
-        foreach (GameObject lightCylinder in ceilingLightCylinders)
-        {
-            //lightCylinder.SetActive(true);
-            //lightCylinder.GetComponent<Material>().EnableKeyword("_EMISSION");
-        }
-        lightMaterial.EnableKeyword("_EMISSION");
-        foreach (Light spotlight in ceilingSpotlights)
-        {
-            spotlight.enabled = true;
-        }
-
-        // Wait for most of the generator's duration
-        yield return new WaitForSeconds(generatorDuration - stopSound.clip.length);
-
-        // Play stop sound
-        idleSound.Stop(); // Stop the idle sound first
-        stopSound.Play();
-
-        // Wait for stop sound to finish before stopping ceiling audio
-        yield return new WaitForSeconds(stopSound.clip.length);
-
-        // Stop ceiling audio
-        ceilingAudio.Stop();
-
-        // Turn off generator
-        isGeneratorOn = false;
-
-        // Turn back on generator-specific lights
-        generatorSpotlight.enabled = true;
-        foreach (Light pointLight in generatorPointLights)
-        {
-            pointLight.enabled = true;
-        }
-
-        // Disable ceiling lights and their cylinders
-        foreach (GameObject lightCylinder in ceilingLightCylinders)
-        {
-            //lightCylinder.SetActive(false);
-            //lightCylinder.GetComponent<Material>().DisableKeyword("_EMISSION");
-        }
-        lightMaterial.DisableKeyword("_EMISSION");
-        foreach (Light spotlight in ceilingSpotlights)
-        {
-            spotlight.enabled = false;
-        }
-
-        // Reactivation: Player needs to return to the generator to restart
-        interactPrompt.gameObject.SetActive(true); // Show prompt again
-    }
-
-
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            isNearGenerator = true;
-            if (!isGeneratorOn)
-            {
-                interactPrompt.gameObject.SetActive(true); // Show the prompt
+            if (!isGeneratorOn && !generatorBroken) {
+                StartCoroutine(TurnOnGenerator());
+            } else if (generatorBroken && !miniGameActive) {
+                Debug.Log("Mini-game should start now");
+                StartMiniGame();
             }
         }
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            isNearGenerator = false;
-            interactPrompt.gameObject.SetActive(false); // Hide the prompt
+    public void BreakGenerator() {
+        Debug.Log($"Break Attempt: On={isGeneratorOn}, Broken={generatorBroken}, HasRunOnce={hasBeenTurnedOnOnce}");
+
+        // ✅ Only allow break if generator is on AND has been turned on at least once
+        if (generatorBroken || !isGeneratorOn || !hasBeenTurnedOnOnce) {
+            Debug.Log("Skipping break: already broken, off, or never started.");
+            return;
         }
+
+        Debug.Log("Generator has been broken.");
+
+        generatorBroken = true;
+        isGeneratorOn = false;
+
+        idleSound.Stop();
+        ceilingAudio.Stop();
+        stopSound.Play();
+
+        lightMaterial.DisableKeyword("_EMISSION");
+        foreach (Light spotlight in ceilingSpotlights) {
+            spotlight.enabled = false;
+        }
+
+        generatorSpotlight.enabled = true;
+        foreach (Light pointLight in generatorPointLights) {
+            pointLight.enabled = true;
+        }
+
+        interactPrompt.text = "[E] Fix Generator";
+        interactPrompt.gameObject.SetActive(isNearGenerator);
+    }
+
+    public void StartMiniGame() {
+        Debug.Log("StartMiniGame() called");
+
+        if (miniGameUI != null) {
+            miniGameUI.SetActive(true);
+            Debug.Log("Mini-game UI activated");
+        } else {
+            Debug.LogWarning("MiniGame UI is NOT assigned!");
+        }
+
+        miniGameActive = true;
+        interactPrompt.gameObject.SetActive(false);
+    }
+
+    public void CompleteMiniGame() {
+    miniGameUI.SetActive(false);
+    miniGameActive = false;
+    generatorBroken = false;
+
+    if (interactPrompt != null) {
+        interactPrompt.text = "Generator Fixed!";
+        interactPrompt.gameObject.SetActive(true);
+        StartCoroutine(HidePromptAfterDelay(2f));
+    }
+
+    StartCoroutine(TurnOnGenerator()); // ✅ restart generator after successful fix
+}
+
+    private IEnumerator HidePromptAfterDelay(float delay) {
+        yield return new WaitForSeconds(delay);
+        interactPrompt.gameObject.SetActive(false);
+    }
+
+    public void PlayErrorSound() {
+        if (errorSound != null) errorSound.Play();
+    }
+
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
+            isNearGenerator = true;
+            if (!isGeneratorOn || generatorBroken) {
+                interactPrompt.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other) {
+        if (other.CompareTag("Player")) {
+            isNearGenerator = false;
+            interactPrompt.gameObject.SetActive(false);
+        }
+    }
+
+    private IEnumerator TurnOnGenerator() {
+        startSound.Play();
+        yield return new WaitForSeconds(startSound.clip.length);
+
+        isGeneratorOn = true;
+        hasBeenTurnedOnOnce = true; // ✅ Mark that it has been started at least once
+
+        generatorSpotlight.enabled = false;
+        foreach (Light pointLight in generatorPointLights) {
+            pointLight.enabled = false;
+        }
+
+        lightMaterial.EnableKeyword("_EMISSION");
+        foreach (Light spotlight in ceilingSpotlights) {
+            spotlight.enabled = true;
+        }
+
+        ceilingAudio.Play();
+        idleSound.Play();
+
+        yield return new WaitForSeconds(generatorDuration - stopSound.clip.length);
+
+        idleSound.Stop();
+        stopSound.Play();
+        yield return new WaitForSeconds(stopSound.clip.length);
+
+        ceilingAudio.Stop();
+        isGeneratorOn = false;
+
+        generatorSpotlight.enabled = true;
+        foreach (Light pointLight in generatorPointLights) {
+            pointLight.enabled = true;
+        }
+
+        lightMaterial.DisableKeyword("_EMISSION");
+        foreach (Light spotlight in ceilingSpotlights) {
+            spotlight.enabled = false;
+        }
+
+        interactPrompt.text = "[E] Start Generator";
+        interactPrompt.gameObject.SetActive(isNearGenerator);
+    }
+
+    // ✅ For Announcer to check generator status
+    public bool IsGeneratorOn() {
+        return isGeneratorOn;
     }
 }
