@@ -28,7 +28,7 @@ public class GeneratorController : MonoBehaviour {
     private bool isGeneratorOn = false;
     private bool generatorBroken = false;
     private bool miniGameActive = false;
-    private bool hasBeenTurnedOnOnce = false; // ✅ New flag
+    private bool hasBeenTurnedOnOnce = false; // New flag
 
     void Start() {
         generatorSpotlight.enabled = true;
@@ -115,7 +115,7 @@ public class GeneratorController : MonoBehaviour {
         StartCoroutine(HidePromptAfterDelay(2f));
     }
 
-    StartCoroutine(TurnOnGenerator()); // ✅ restart generator after successful fix
+    StartCoroutine(TurnOnGenerator()); // restart generator after successful fix
 }
 
     private IEnumerator HidePromptAfterDelay(float delay) {
@@ -148,7 +148,7 @@ public class GeneratorController : MonoBehaviour {
         yield return new WaitForSeconds(startSound.clip.length);
 
         isGeneratorOn = true;
-        hasBeenTurnedOnOnce = true; // ✅ Mark that it has been started at least once
+        hasBeenTurnedOnOnce = true; // Mark that it has been started at least once
 
         generatorSpotlight.enabled = false;
         foreach (Light pointLight in generatorPointLights) {
@@ -186,7 +186,7 @@ public class GeneratorController : MonoBehaviour {
         interactPrompt.gameObject.SetActive(isNearGenerator);
     }
 
-    // ✅ For Announcer to check generator status
+    // For Announcer to check generator status
     public bool IsGeneratorOn() {
         return isGeneratorOn;
     }
