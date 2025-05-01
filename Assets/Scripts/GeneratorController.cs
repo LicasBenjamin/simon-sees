@@ -16,23 +16,20 @@ public class GeneratorController : MonoBehaviour {
     public AudioSource stopSound;
     public AudioSource ceilingAudio;
     public AudioSource errorSound;
-    public AudioSource powerDownAudio;
 
     [Header("UI")]
     public TextMeshProUGUI interactPrompt;
     public GameObject miniGameUI;
+    public GameObject colorUI; // ✅ NEW: assign color reticle UI
 
     [Header("Settings")]
     public float generatorDuration = 30f;
 
     private bool isNearGenerator = false;
     private bool isGeneratorOn = false;
-    private bool generatorBroken = true; //Setting true to introduce the minigame to the player
+    private bool generatorBroken = false;
     private bool miniGameActive = false;
     private bool hasBeenTurnedOnOnce = false;
-
-    [Header("Announcer Reference")]
-    public Announcer announcer;
 
     void Start() {
         generatorSpotlight.enabled = true;
@@ -47,6 +44,7 @@ public class GeneratorController : MonoBehaviour {
 
         interactPrompt.gameObject.SetActive(false);
         miniGameUI.SetActive(false);
+        if (colorUI != null) colorUI.SetActive(false); // ✅ OFF at start
     }
 
     void Update() {
@@ -78,7 +76,6 @@ public class GeneratorController : MonoBehaviour {
 
         idleSound.Stop();
         ceilingAudio.Stop();
-        powerDownAudio.Play();
         stopSound.Play();
 
         lightMaterial.DisableKeyword("_EMISSION");
@@ -90,6 +87,8 @@ public class GeneratorController : MonoBehaviour {
         foreach (Light pointLight in generatorPointLights) {
             pointLight.enabled = true;
         }
+
+        if (colorUI != null) colorUI.SetActive(false); // ✅ Hide color UI
 
         interactPrompt.text = "[E] Fix Generator";
         interactPrompt.gameObject.SetActive(isNearGenerator);
@@ -114,17 +113,13 @@ public class GeneratorController : MonoBehaviour {
         miniGameActive = false;
         generatorBroken = false;
 
-        //Begin announcer if this is the first minigame played
-        if (!announcer.isFirstTimeCalled)
-        {
-            announcer.beginAnnouncer();
-        }
-
         if (interactPrompt != null) {
             interactPrompt.text = "Generator Fixed!";
             interactPrompt.gameObject.SetActive(true);
             StartCoroutine(HidePromptAfterDelay(2f));
         }
+
+        if (colorUI != null) colorUI.SetActive(true); // ✅ Show color UI again
 
         StartCoroutine(TurnOnGenerator());
     }
@@ -175,6 +170,8 @@ public class GeneratorController : MonoBehaviour {
         ceilingAudio.Play();
         idleSound.Play();
 
+        if (colorUI != null) colorUI.SetActive(true); // ✅ Show when generator turns on
+
         yield return new WaitForSeconds(generatorDuration - stopSound.clip.length);
 
         idleSound.Stop();
@@ -182,8 +179,7 @@ public class GeneratorController : MonoBehaviour {
         yield return new WaitForSeconds(stopSound.clip.length);
 
         ceilingAudio.Stop();
-        powerDownAudio.Play();
-        // New logic: treat shutdown as a breakdown
+
         isGeneratorOn = false;
         generatorBroken = true;
         miniGameActive = false;
@@ -199,6 +195,8 @@ public class GeneratorController : MonoBehaviour {
         foreach (Light pointLight in generatorPointLights) {
             pointLight.enabled = true;
         }
+
+        if (colorUI != null) colorUI.SetActive(false); // ✅ Hide when generator shuts down
 
         if (isNearGenerator && interactPrompt != null) {
             interactPrompt.text = "[E] Fix Generator";
