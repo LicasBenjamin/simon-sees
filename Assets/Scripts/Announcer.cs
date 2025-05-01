@@ -27,7 +27,9 @@ public class Announcer : MonoBehaviour {
     public bool TaskActive => taskActive;
 
     public bool isFirstTimeCalled = false;
+    [Header("Central Game State Variables")]
     public int taskNum = -1;
+    public int failedTasks = 0;
 
     //Temporarily disabling this being called on start, replaced with a callable function to begin the announcer
     /**
@@ -103,8 +105,13 @@ public class Announcer : MonoBehaviour {
         announcerText.text = "Player has failed this task.";
         announcerText.transform.parent.gameObject.SetActive(true);
 
+        //Add to the failed tasks counter and adjust state accordingly
+        failedTasks++;
+        AdjustState();
+
         Debug.Log("Task failed.");
 
+        //Below is randomly generating odds to break the generator
         if (generatorController != null) {
             if (generatorController.IsGeneratorOn()) {
                 float roll = Random.value;
@@ -122,5 +129,17 @@ public class Announcer : MonoBehaviour {
         }
 
         Invoke(nameof(GiveNewTask), displayTime);
+    }
+
+    void AdjustState()
+    {
+        if(failedTasks == 1)
+        {
+            //open door, activate glass as the replacement for "yellow" wall
+        }
+        else
+        {
+            //get monster closer, if failedTasks
+        }
     }
 }
