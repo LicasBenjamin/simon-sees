@@ -13,7 +13,7 @@ public class Announcer : MonoBehaviour {
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
-    private float taskDuration = 30f;
+    private float taskDuration = 12.5f;
 
     [Header("Generator Failure Link")]
     public GeneratorController generatorController;
@@ -27,6 +27,7 @@ public class Announcer : MonoBehaviour {
     public bool TaskActive => taskActive;
 
     public bool isFirstTimeCalled = false;
+    public int taskNum = -1;
 
     //Temporarily disabling this being called on start, replaced with a callable function to begin the announcer
     /**
@@ -54,7 +55,9 @@ public class Announcer : MonoBehaviour {
     void GiveNewTask() {
         currentTargetWallColor = colors[Random.Range(0, colors.Length)];
         currentTargetTile = Random.Range(1, totalTiles + 1);
-
+        //taskNum++;
+        //taskDuration = -0.5f*(taskNum) + 30f;
+        //Debug.Log("Current time for Task "+taskNum+": "+taskDuration);
         taskAudioSource.Play();
 
         announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";

@@ -204,6 +204,7 @@ public class WallDetection : MonoBehaviour
         if (color == Color.blue) return "Blue";
         if (color == Color.green) return "Green";
         if (color == Color.yellow) return "Yellow";
+        if (color == Color.white) return "Glass";
 
         string hexColor = ColorUtility.ToHtmlStringRGB(color);
         switch (hexColor)
@@ -212,6 +213,7 @@ public class WallDetection : MonoBehaviour
             case "840000": return "Red";
             case "005005": return "Green";
             case "847E00": return "Yellow";
+            case "D2FFFF": return "Glass";
             default: return "Unknown";
         }
     }
