@@ -27,9 +27,12 @@ public class GeneratorController : MonoBehaviour {
 
     private bool isNearGenerator = false;
     private bool isGeneratorOn = false;
-    private bool generatorBroken = false;
+    private bool generatorBroken = true;
     private bool miniGameActive = false;
     private bool hasBeenTurnedOnOnce = false;
+    [Header("Local References")]
+    [SerializeField] private Announcer announcer;
+
 
     void Start() {
         generatorSpotlight.enabled = true;
@@ -112,6 +115,11 @@ public class GeneratorController : MonoBehaviour {
         miniGameUI.SetActive(false);
         miniGameActive = false;
         generatorBroken = false;
+
+        if (!hasBeenTurnedOnOnce)
+        {
+            announcer.beginAnnouncer();
+        }
 
         if (interactPrompt != null) {
             interactPrompt.text = "Generator Fixed!";

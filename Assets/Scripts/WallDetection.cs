@@ -77,6 +77,11 @@ public class WallDetection : MonoBehaviour
             if (wallRenderer != null)
             {
                 string colorName = GetColorName(wallRenderer.material.color);
+                //checking if wall is "Glass"
+                if(colorName == "White")
+                {
+                    colorName = "Glass";
+                }
                 int tileStandingOn = GetCurrentTile();
                 //If hovering and standing on correct task, increment bar
                 if (colorName == announcer.currentTargetWallColor && tileStandingOn == announcer.currentTargetTile && announcer.taskActive)

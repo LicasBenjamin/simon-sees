@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class YellowWall : MonoBehaviour
 {
+    [Header("Local References")]
     [SerializeField] private AudioSource doorSound;
     [SerializeField] private ReflectionProbe probe;
-
-
+    [SerializeField] private GameObject glassWall;
+    private void Start()
+    {
+        glassWall.SetActive(false);
+    }
     // Update is called once per frame
     void Update()
     {
@@ -18,6 +22,7 @@ public class YellowWall : MonoBehaviour
     }
     IEnumerator OpenDoor()
     {
+        glassWall.SetActive(true);
         doorSound.Play();
         yield return new WaitForSeconds(7);
 
@@ -35,5 +40,6 @@ public class YellowWall : MonoBehaviour
         }
         probe.RenderProbe();
         transform.position = endPos; // Ensure it ends at the exact final position
+        gameObject.SetActive(false); // Disable door so player cannot hover over it
     }
 }

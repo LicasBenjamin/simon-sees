@@ -13,7 +13,7 @@ public class Announcer : MonoBehaviour {
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
-    private float taskDuration = 12.5f;
+    private float taskDuration = 20f;
 
     [Header("Generator Failure Link")]
     public GeneratorController generatorController;
@@ -62,6 +62,14 @@ public class Announcer : MonoBehaviour {
         //Debug.Log("Current time for Task "+taskNum+": "+taskDuration);
         taskAudioSource.Play();
 
+        //if failedTasks >= 1, change "Yellow" to "Glass"
+        if (failedTasks >= 1)
+        {
+            if(currentTargetWallColor == "Yellow")
+            {
+                currentTargetWallColor = "Glass";
+            }
+        }
         announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
         announcerText.transform.parent.gameObject.SetActive(true);
 
@@ -119,7 +127,7 @@ public class Announcer : MonoBehaviour {
 
                 if (roll < failureChance) {
                     Debug.Log("Announcer decided to break the generator.");
-                    generatorController.BreakGenerator();
+                    //generatorController.BreakGenerator();
                 }
             } else {
                 Debug.Log("Generator is already off. Skipping break attempt.");
