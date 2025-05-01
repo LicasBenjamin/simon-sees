@@ -1,29 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Tile : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+public class Tile : MonoBehaviour {
+    public TileLabel tileLabel; // Drag the TileLabel script manually or auto-link it
+
+    private void Start() {
+        if (tileLabel == null) {
+            tileLabel = GetComponent<TileLabel>();
+        }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public int tileID; // Assign this in the inspector or dynamically
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            //Debug.Log("Player is on Tile: " + tileID);
-            this.transform.parent.GetComponent<TileController>().UpdateTileArray(tileID-1);
+    private void OnTriggerStay(Collider other) {
+        if (other.CompareTag("Player") && tileLabel != null) {
+            int visibleTileNumber = tileLabel.GetCurrentNumber();
+            this.transform.parent.GetComponent<TileController>().UpdateTileStandingOn(visibleTileNumber);
         }
     }
 }

@@ -1,32 +1,22 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileController : MonoBehaviour
-{
-    public static bool[] tilePlayerIsOn = new bool[9];
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+public class TileController : MonoBehaviour {
+    public static int playerIsOnTile = 0;
+    public TileLabel[] tileLabels; // Assign all 9 TileLabel components in Inspector
+
+    public void UpdateTileStandingOn(int visibleTileNumber) {
+        playerIsOnTile = visibleTileNumber;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    public void Test()
-    {
-        print("parent function calling works!");
-    }
-    public void UpdateTileArray(int index)
-    {
-        if (!tilePlayerIsOn[index])
-        {
-            tilePlayerIsOn = new bool[9];
-            tilePlayerIsOn[index] = true;
-            //print(string.Join(",", tilePlayerIsOn));
+    public void ShuffleTileNumbers() {
+        List<int> numbers = new List<int>();
+        for (int i = 1; i <= tileLabels.Length; i++) numbers.Add(i);
+
+        for (int i = 0; i < tileLabels.Length; i++) {
+            int randIndex = Random.Range(0, numbers.Count);
+            tileLabels[i].SetNumber(numbers[randIndex]);
+            numbers.RemoveAt(randIndex);
         }
     }
 }
