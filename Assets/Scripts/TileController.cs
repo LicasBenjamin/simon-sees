@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class TileController : MonoBehaviour {
     public static int playerIsOnTile = 0;
-    public TileLabel[] tileLabels; // Assign all 9 TileLabel components in Inspector
+    public TextMeshProUGUI[] tileLabels; // Assign all 9 TileLabel components in Inspector
 
     public void UpdateTileStandingOn(int visibleTileNumber) {
         playerIsOnTile = visibleTileNumber;
@@ -15,7 +16,16 @@ public class TileController : MonoBehaviour {
 
         for (int i = 0; i < tileLabels.Length; i++) {
             int randIndex = Random.Range(0, numbers.Count);
-            tileLabels[i].SetNumber(numbers[randIndex]);
+            int number = numbers[randIndex];
+            tileLabels[i].text = (numbers[randIndex]).ToString();
+            if (number == 6 || number == 9)
+            {
+                tileLabels[i].fontStyle = FontStyles.Underline;
+            }
+            else
+            {
+                tileLabels[i].fontStyle = FontStyles.Normal;
+            }
             numbers.RemoveAt(randIndex);
         }
     }

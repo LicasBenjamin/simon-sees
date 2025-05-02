@@ -16,6 +16,7 @@ public class GeneratorController : MonoBehaviour {
     public AudioSource stopSound;
     public AudioSource ceilingAudio;
     public AudioSource errorSound;
+    public AudioSource powerDownSound;
 
     [Header("UI")]
     public TextMeshProUGUI interactPrompt;
@@ -23,13 +24,18 @@ public class GeneratorController : MonoBehaviour {
     public GameObject colorUI; // ✅ NEW: assign color reticle UI
 
     [Header("Settings")]
-    public float generatorDuration = 30f;
+    public float generatorMaxDuration = 45f;
+    public float generatorDurationLeft = 0;
 
     private bool isNearGenerator = false;
-    private bool isGeneratorOn = false;
-    private bool generatorBroken = false;
+    private bool generatorBroken = true;
     private bool miniGameActive = false;
     private bool hasBeenTurnedOnOnce = false;
+    [Header("Local References")]
+    [SerializeField] private Announcer announcer;
+    [SerializeField] public TextMeshProUGUI testText;
+    private bool soundEffectPlayed = true;
+
 
     void Start() {
         generatorSpotlight.enabled = true;
@@ -45,31 +51,42 @@ public class GeneratorController : MonoBehaviour {
         interactPrompt.gameObject.SetActive(false);
         miniGameUI.SetActive(false);
         if (colorUI != null) colorUI.SetActive(false); // ✅ OFF at start
-    }
+
+        //testText = GetComponent<TextMeshProUGUI>();
+        generatorDurationLeft = 0f;
+        generatorMaxDuration = 45f;
+
+}
 
     void Update() {
+        generatorDurationLeft = Mathf.Max(generatorDurationLeft - Time.deltaTime, 0);
+        //Debug.Log("Generator Time Left: " + generatorDurationLeft);
+        testText.text = generatorDurationLeft.ToString();
+
         if (isNearGenerator && Input.GetKeyDown(KeyCode.E)) {
             Debug.Log("E pressed near generator");
 
-            if (generatorBroken && !miniGameActive) {
+            if (!miniGameActive) {
                 Debug.Log("Mini-game should start now");
                 StartMiniGame();
-            } else if (!isGeneratorOn && !generatorBroken) {
-                StartCoroutine(TurnOnGenerator());
+            }
+            else
+            {
+                StartCoroutine(RepairGenerator());
             }
         }
+        StartCoroutine("ShutDownPower");
     }
-
+    /*
     public void BreakGenerator() {
-        Debug.Log($"Break Attempt: On={isGeneratorOn}, Broken={generatorBroken}, HasRunOnce={hasBeenTurnedOnOnce}");
+        //Debug.Log($"Break Attempt: On={isGeneratorOn}, Broken={generatorBroken}, HasRunOnce={hasBeenTurnedOnOnce}");
 
-        if (generatorBroken || !isGeneratorOn) {
+        if (generatorBroken) {
             Debug.Log("Skipping break: already broken or generator is off.");
             return;
         }
 
         generatorBroken = true;
-        isGeneratorOn = false;
         hasBeenTurnedOnOnce = true;
 
         Debug.Log("Generator has been broken.");
@@ -77,6 +94,7 @@ public class GeneratorController : MonoBehaviour {
         idleSound.Stop();
         ceilingAudio.Stop();
         stopSound.Play();
+        powerDownSound.Play();
 
         lightMaterial.DisableKeyword("_EMISSION");
         foreach (Light spotlight in ceilingSpotlights) {
@@ -92,7 +110,7 @@ public class GeneratorController : MonoBehaviour {
 
         interactPrompt.text = "[E] Fix Generator";
         interactPrompt.gameObject.SetActive(isNearGenerator);
-    }
+    }*/
 
     public void StartMiniGame() {
         Debug.Log("StartMiniGame() called");
@@ -113,6 +131,11 @@ public class GeneratorController : MonoBehaviour {
         miniGameActive = false;
         generatorBroken = false;
 
+        if (!hasBeenTurnedOnOnce)
+        {
+            announcer.beginAnnouncer();
+        }
+
         if (interactPrompt != null) {
             interactPrompt.text = "Generator Fixed!";
             interactPrompt.gameObject.SetActive(true);
@@ -121,7 +144,7 @@ public class GeneratorController : MonoBehaviour {
 
         if (colorUI != null) colorUI.SetActive(true); // ✅ Show color UI again
 
-        StartCoroutine(TurnOnGenerator());
+        StartCoroutine(RepairGenerator());
     }
 
     private IEnumerator HidePromptAfterDelay(float delay) {
@@ -136,7 +159,7 @@ public class GeneratorController : MonoBehaviour {
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Player")) {
             isNearGenerator = true;
-            if (!isGeneratorOn || generatorBroken) {
+            if (generatorBroken) {
                 interactPrompt.gameObject.SetActive(true);
                 interactPrompt.text = generatorBroken ? "[E] Fix Generator" : "[E] Start Generator";
             }
@@ -150,11 +173,11 @@ public class GeneratorController : MonoBehaviour {
         }
     }
 
-    private IEnumerator TurnOnGenerator() {
+    private IEnumerator RepairGenerator() {
         startSound.Play();
         yield return new WaitForSeconds(startSound.clip.length);
 
-        isGeneratorOn = true;
+        soundEffectPlayed = false;
         hasBeenTurnedOnOnce = true;
 
         generatorSpotlight.enabled = false;
@@ -172,31 +195,15 @@ public class GeneratorController : MonoBehaviour {
 
         if (colorUI != null) colorUI.SetActive(true); // ✅ Show when generator turns on
 
-        yield return new WaitForSeconds(generatorDuration - stopSound.clip.length);
+        float temp = Mathf.Min(generatorMaxDuration, generatorDurationLeft + generatorMaxDuration / 2);
+        generatorDurationLeft = temp;
+        //yield return new WaitForSeconds(temp - stopSound.clip.length);
 
-        idleSound.Stop();
-        stopSound.Play();
-        yield return new WaitForSeconds(stopSound.clip.length);
-
-        ceilingAudio.Stop();
-
-        isGeneratorOn = false;
-        generatorBroken = true;
+        
+        
         miniGameActive = false;
 
-        Debug.Log("Generator shut down automatically — now considered broken.");
-
-        lightMaterial.DisableKeyword("_EMISSION");
-        foreach (Light spotlight in ceilingSpotlights) {
-            spotlight.enabled = false;
-        }
-
-        generatorSpotlight.enabled = true;
-        foreach (Light pointLight in generatorPointLights) {
-            pointLight.enabled = true;
-        }
-
-        if (colorUI != null) colorUI.SetActive(false); // ✅ Hide when generator shuts down
+        //Debug.Log("Generator shut down automatically — now considered broken.");
 
         if (isNearGenerator && interactPrompt != null) {
             interactPrompt.text = "[E] Fix Generator";
@@ -204,7 +211,31 @@ public class GeneratorController : MonoBehaviour {
         }
     }
 
-    public bool IsGeneratorOn() {
-        return isGeneratorOn;
+    private IEnumerator ShutDownPower()
+    {
+        if (generatorDurationLeft <= stopSound.clip.length && !soundEffectPlayed)
+        {
+            soundEffectPlayed = true;
+            idleSound.Stop();
+            stopSound.Play();
+            yield return new WaitForSeconds(stopSound.clip.length);
+            ceilingAudio.Stop();
+            powerDownSound.Play();
+
+            generatorBroken = true;
+            lightMaterial.DisableKeyword("_EMISSION");
+            foreach (Light spotlight in ceilingSpotlights)
+            {
+                spotlight.enabled = false;
+            }
+
+            generatorSpotlight.enabled = true;
+            foreach (Light pointLight in generatorPointLights)
+            {
+                pointLight.enabled = true;
+            }
+
+            if (colorUI != null) colorUI.SetActive(false); // ✅ Hide when generator shuts down
+        }
     }
 }
