@@ -20,7 +20,7 @@ public class YellowWall : MonoBehaviour
             StartCoroutine(OpenDoor());
         }
     }
-    IEnumerator OpenDoor()
+    public IEnumerator OpenDoor()
     {
         glassWall.SetActive(true);
         doorSound.Play();

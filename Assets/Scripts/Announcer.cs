@@ -16,7 +16,7 @@ public class Announcer : MonoBehaviour {
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
-    private float taskDuration = 20f;
+    private float taskDuration = 25f;
 
     [Header("Generator Failure Link")]
     public GeneratorController generatorController;
@@ -31,8 +31,10 @@ public class Announcer : MonoBehaviour {
 
     [Header("Tile Logic")]
     public TileController tileController; // ✅ Drag your TileController here in Inspector
-
     private Coroutine taskTimerCoroutine;
+
+    [Header("Local References")]
+    public YellowWall yellowWallReference;
 
     void Start() {
         //announcerText.text = "Welcome, test subject.";
@@ -112,7 +114,15 @@ public class Announcer : MonoBehaviour {
             //{
             //    generatorController.BreakGenerator();
             //}
-            yield return new WaitForSeconds(5f);
+            if(failedTasks == 1)
+            {
+                //Give enough time for wall opening sequence to play
+                yield return new WaitForSeconds(34f);
+            }
+            else
+            {
+                yield return new WaitForSeconds(5f);
+            }
             GiveNextTask();
 
             //Invoke(nameof(GiveNewTask), displayTime);
@@ -172,10 +182,34 @@ public class Announcer : MonoBehaviour {
         if(failedTasks == 1)
         {
             //open door, activate glass as the replacement for "yellow" wall
+            /* Script:
+             * Looks like Simon is upset now, to monitor him one of the walls
+             * is now going to be referred to as the “glass wall,” it should
+             * be self-explanatory Subject 31D.
+             * As a reminder, performing the tasks incorrectly is not advised for your safety*/
+            StartCoroutine(HandleError1Dialogue());
         }
         else
         {
             //get monster closer, if failedTasks
         }
+    }
+
+    IEnumerator HandleError1Dialogue()
+    {
+        yield return Speak("", 0.5f);
+        StartCoroutine(yellowWallReference.OpenDoor());
+        yield return Speak("", 15f);
+        yield return Speak("Looks like Simon is upset now", 2.5f);
+        yield return Speak("to monitor him one of the walls is now going to be\n referred to as the “glass wall,”", 5f);
+        yield return Speak(" it should be self-explanatory Subject 31D.", 5f);
+        yield return Speak("As a reminder, performing the tasks incorrectly is\n not advised for your safety", 5f);
+        yield return Speak("", 0.5f);
+    }
+
+    IEnumerator Speak(string speech, float seconds)
+    {
+        announcerText.text = speech;
+        yield return new WaitForSeconds(seconds);
     }
 }
