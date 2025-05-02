@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using UnityEngine.UI;
 
 public class GeneratorController : MonoBehaviour {
     [Header("Lighting")]
@@ -24,7 +25,7 @@ public class GeneratorController : MonoBehaviour {
     public GameObject colorUI; // ✅ NEW: assign color reticle UI
 
     [Header("Settings")]
-    public float generatorMaxDuration = 45f;
+    public float generatorMaxDuration = 100f;
     public float generatorDurationLeft = 0;
 
     private bool isNearGenerator = false;
@@ -35,6 +36,7 @@ public class GeneratorController : MonoBehaviour {
     [SerializeField] private Announcer announcer;
     [SerializeField] public TextMeshProUGUI testText;
     private bool soundEffectPlayed = true;
+    [SerializeField] private Image powerBar;
 
 
     void Start() {
@@ -53,15 +55,16 @@ public class GeneratorController : MonoBehaviour {
         if (colorUI != null) colorUI.SetActive(false); // ✅ OFF at start
 
         //testText = GetComponent<TextMeshProUGUI>();
-        generatorDurationLeft = 0f;
-        generatorMaxDuration = 45f;
+        //generatorDurationLeft = 0f;
+        //generatorMaxDuration = 45f;
 
 }
 
     void Update() {
         generatorDurationLeft = Mathf.Max(generatorDurationLeft - Time.deltaTime, 0);
         //Debug.Log("Generator Time Left: " + generatorDurationLeft);
-        testText.text = generatorDurationLeft.ToString();
+        //testText.text = generatorDurationLeft.ToString();
+        powerBar.fillAmount = generatorDurationLeft/ generatorMaxDuration;
 
         if (isNearGenerator && Input.GetKeyDown(KeyCode.E)) {
             Debug.Log("E pressed near generator");

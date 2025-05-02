@@ -67,8 +67,6 @@ public class WallDetection : MonoBehaviour {
                 if (colorName == announcer.currentTargetWallColor && tileStandingOn == announcer.currentTargetTile && announcer.taskActive)
                 {
                     //doingCorrectTask = true;
-
-                    //doingCorrectTask = true;
                     //If bar is fully completed, trigger completion in announcer
                     if (UICompletionCursor.fillAmount >= 1f)
                     {
@@ -86,7 +84,12 @@ public class WallDetection : MonoBehaviour {
             }
         }
 
-        
+
+        if (!announcer.taskActive)
+        {
+            UICompletionCursor.fillAmount = 0;
+        }
+
         // Audio handling
         /**
         if (taskAudioSource != null) {
