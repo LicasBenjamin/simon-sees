@@ -12,15 +12,15 @@ public class WallDetection : MonoBehaviour {
     public float taskIncreaseRate = 0.15f;
     public AudioSource taskAudioSource;
 
-    public float maxShakeIntensity = 0.1f;
-    public float shakeGrowthRate = 0.05f;
-    private Vector3 originalCameraPosition;
+    //public float maxShakeIntensity = 0.1f;
+    //public float shakeGrowthRate = 0.05f;
+    //private Vector3 originalCameraPosition;
 
     private Camera mainCamera;
 
     void Start() {
         mainCamera = Camera.main;
-        originalCameraPosition = mainCamera.transform.localPosition;
+        //originalCameraPosition = mainCamera.transform.localPosition;
     }
 
     void Update() {
@@ -49,7 +49,7 @@ public class WallDetection : MonoBehaviour {
     void HandleWallHover() {
         Ray ray = mainCamera.ScreenPointToRay(new Vector2(Screen.width / 2, Screen.height / 2));
         RaycastHit hit;
-        bool doingCorrectTask = false;
+        //bool doingCorrectTask = false;
 
         if (Physics.Raycast(ray, out hit, maxRayDistance, wallLayer) && hit.collider.CompareTag("Wall")) {
             Renderer wallRenderer = hit.collider.GetComponent<Renderer>();
@@ -60,11 +60,13 @@ public class WallDetection : MonoBehaviour {
                 {
                     colorName = "Glass";
                 }
-                int tileStandingOn = GetCurrentTile();
+                //Debug.Log("Player is looking at " + colorName + " Wall");
+                int tileStandingOn = TileController.playerIsOnTile;
+                //Debug.Log("Player is standing on tile #" + tileStandingOn);
                 //If hovering and standing on correct task, increment bar
                 if (colorName == announcer.currentTargetWallColor && tileStandingOn == announcer.currentTargetTile && announcer.taskActive)
                 {
-                    doingCorrectTask = true;
+                    //doingCorrectTask = true;
 
                     //doingCorrectTask = true;
                     //If bar is fully completed, trigger completion in announcer
@@ -76,7 +78,7 @@ public class WallDetection : MonoBehaviour {
                         if (taskAudioSource != null && taskAudioSource.isPlaying)
                             taskAudioSource.Stop();
 
-                        mainCamera.transform.localPosition = originalCameraPosition;
+                        //mainCamera.transform.localPosition = originalCameraPosition;
                     } else {
                         UICompletionCursor.fillAmount += taskIncreaseRate * Time.deltaTime;
                     }
@@ -84,7 +86,9 @@ public class WallDetection : MonoBehaviour {
             }
         }
 
+        
         // Audio handling
+        /**
         if (taskAudioSource != null) {
             if (doingCorrectTask) {
                 if (!taskAudioSource.isPlaying)
@@ -99,8 +103,9 @@ public class WallDetection : MonoBehaviour {
             if (taskAudioSource != null)
                 taskAudioSource.Stop();
             UICompletionCursor.fillAmount = 0;
-        }
+        }*/
 
+        /**
         if (doingCorrectTask && taskAudioSource != null && taskAudioSource.isPlaying) {
             float shakeAmount = Mathf.Min(maxShakeIntensity, taskAudioSource.time * shakeGrowthRate);
             Vector3 shakeOffset = new Vector3(
@@ -112,7 +117,7 @@ public class WallDetection : MonoBehaviour {
             mainCamera.transform.localPosition = originalCameraPosition + shakeOffset;
         } else {
             mainCamera.transform.localPosition = originalCameraPosition;
-        }
+        }*/
     }
 
     void HandleWallClick() {

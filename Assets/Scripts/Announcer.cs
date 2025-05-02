@@ -35,6 +35,13 @@ public class Announcer : MonoBehaviour {
     private Coroutine taskTimerCoroutine;
 
     void Start() {
+        //announcerText.text = "Welcome, test subject.";
+        announcerText.gameObject.transform.parent.gameObject.SetActive(false);
+        //Invoke(nameof(GiveNextTask), displayTime);
+    }
+
+    public void beginAnnouncer()
+    {
         announcerText.text = "Welcome, test subject.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(true);
         Invoke(nameof(GiveNextTask), displayTime);
@@ -48,7 +55,6 @@ public class Announcer : MonoBehaviour {
         //taskDuration = -0.5f*(taskNum) + 30f;
         //Debug.Log("Current time for Task "+taskNum+": "+taskDuration);
         taskAudioSource.Play();
-
         //if failedTasks >= 1, change "Yellow" to "Glass"
         if (failedTasks >= 1)
         {
@@ -81,7 +87,7 @@ public class Announcer : MonoBehaviour {
         if (wallColor == currentTargetWallColor && tileNumber == currentTargetTile) {
             announcerText.text = "Subject has completed this task.";
             taskActive = false;
-
+            taskAudioSource.Stop();
             if (taskTimerCoroutine != null)
                 StopCoroutine(taskTimerCoroutine);
 
@@ -92,22 +98,32 @@ public class Announcer : MonoBehaviour {
     }
 
     IEnumerator TaskTimer() {
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(taskDuration);
 
-        if (taskActive) {
+        if (taskActive)
+        {
             taskActive = false;
             announcerText.text = $"Subject has failed this task.";
+            failedTasks++;
+            AdjustState();
+            taskAudioSource.Stop();
+            // Random chance to break the generator
+            //if (generatorController != null && Random.value < failureChance)
+            //{
+            //    generatorController.BreakGenerator();
+            //}
+            yield return new WaitForSeconds(5f);
+            GiveNextTask();
 
-        announcerText.text = "Subject has completed this task.";
-        announcerText.transform.parent.gameObject.SetActive(true);
-
-        Invoke(nameof(GiveNewTask), displayTime);
+            //Invoke(nameof(GiveNewTask), displayTime);
+        }
     }
-
+    /**
     void CheckIfTaskFailed() {
         if (!taskActive) return;
         TaskFailed();
     }
+
 
     void TaskFailed() {
         taskActive = false;
@@ -144,7 +160,7 @@ public class Announcer : MonoBehaviour {
             yield return new WaitForSeconds(5f);
             GiveNextTask();
         }
-    }
+    }*/
 
     IEnumerator NextTaskAfterDelay() {
         yield return new WaitForSeconds(5f);
