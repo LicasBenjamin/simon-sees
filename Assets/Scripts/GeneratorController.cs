@@ -16,7 +16,8 @@ public class GeneratorController : MonoBehaviour {
     public AudioSource idleSound;
     public AudioSource stopSound;
     public AudioSource ceilingAudio;
-    public AudioSource errorSound;
+    //public AudioSource hitSound;    //For hitting a square in the minigame
+    //public AudioSource errorSound;  //For missing in the minigame
     public AudioSource powerDownSound;
 
     [Header("UI")]
@@ -27,6 +28,7 @@ public class GeneratorController : MonoBehaviour {
     [Header("Settings")]
     public float generatorMaxDuration = 100f;
     public float generatorDurationLeft = 0;
+    public float generatorDrainRate = 1;
 
     private bool isNearGenerator = false;
     private bool generatorBroken = true;
@@ -37,6 +39,7 @@ public class GeneratorController : MonoBehaviour {
     [SerializeField] public TextMeshProUGUI testText;
     private bool soundEffectPlayed = true;
     [SerializeField] private Image powerBar;
+    public bool generatorIsPaused = false; //<- will be manually changed from other scripts
 
 
     void Start() {
@@ -61,10 +64,13 @@ public class GeneratorController : MonoBehaviour {
 }
 
     void Update() {
-        generatorDurationLeft = Mathf.Max(generatorDurationLeft - Time.deltaTime, 0);
+        if (!generatorIsPaused)
+        {
+            generatorDurationLeft = Mathf.Max(generatorDurationLeft - Time.deltaTime * generatorDrainRate, 0);
+            powerBar.fillAmount = generatorDurationLeft / generatorMaxDuration;
+        }
         //Debug.Log("Generator Time Left: " + generatorDurationLeft);
         //testText.text = generatorDurationLeft.ToString();
-        powerBar.fillAmount = generatorDurationLeft/ generatorMaxDuration;
 
         if (isNearGenerator && Input.GetKeyDown(KeyCode.E)) {
             Debug.Log("E pressed near generator");
@@ -78,7 +84,10 @@ public class GeneratorController : MonoBehaviour {
                 StartCoroutine(RepairGenerator());
             }
         }
-        StartCoroutine("ShutDownPower");
+        if (generatorDurationLeft <= stopSound.clip.length && !soundEffectPlayed)
+        {
+            StartCoroutine("ShutDownPower");
+        }
     }
     /*
     public void BreakGenerator() {
@@ -154,10 +163,10 @@ public class GeneratorController : MonoBehaviour {
         yield return new WaitForSeconds(delay);
         interactPrompt.gameObject.SetActive(false);
     }
-
+    /*
     public void PlayErrorSound() {
         if (errorSound != null) errorSound.Play();
-    }
+    }*/
 
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Player")) {
@@ -213,7 +222,31 @@ public class GeneratorController : MonoBehaviour {
             interactPrompt.gameObject.SetActive(true);
         }
     }
+    private IEnumerator ShutDownPower()
+    {
+        soundEffectPlayed = true;
+        idleSound.Stop();
+        stopSound.Play();
+        yield return new WaitForSeconds(stopSound.clip.length);
+        ceilingAudio.Stop();
+        powerDownSound.Play();
 
+        generatorBroken = true;
+        lightMaterial.DisableKeyword("_EMISSION");
+        foreach (Light spotlight in ceilingSpotlights)
+        {
+            spotlight.enabled = false;
+        }
+
+        generatorSpotlight.enabled = true;
+        foreach (Light pointLight in generatorPointLights)
+        {
+            pointLight.enabled = true;
+        }
+
+        if (colorUI != null) colorUI.SetActive(false); // ✅ Hide when generator shuts down
+    }
+    /*
     private IEnumerator ShutDownPower()
     {
         if (generatorDurationLeft <= stopSound.clip.length && !soundEffectPlayed)
@@ -240,5 +273,5 @@ public class GeneratorController : MonoBehaviour {
 
             if (colorUI != null) colorUI.SetActive(false); // ✅ Hide when generator shuts down
         }
-    }
+    }*/
 }

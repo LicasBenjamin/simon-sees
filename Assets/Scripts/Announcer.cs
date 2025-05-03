@@ -16,7 +16,8 @@ public class Announcer : MonoBehaviour {
 
     private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
-    private float taskDuration = 25f;
+    private float taskDuration = 20f;
+    public int successfulTasks = 0;
 
     [Header("Generator Failure Link")]
     public GeneratorController generatorController;
@@ -35,11 +36,20 @@ public class Announcer : MonoBehaviour {
 
     [Header("Local References")]
     public YellowWall yellowWallReference;
+    public TextMeshProUGUI testText;
+    public Simon simonReference;
+    public TextMeshProUGUI testTextTimer;
+    private float timer;
 
     void Start() {
         //announcerText.text = "Welcome, test subject.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(false);
         //Invoke(nameof(GiveNextTask), displayTime);
+    }
+    private void Update()
+    {
+        testTextTimer.text = "Timer For Current Task: " + timer.ToString("F1");
+        timer = Mathf.Max(timer -= Time.deltaTime, 0);
     }
 
     public void beginAnnouncer()
@@ -57,6 +67,7 @@ public class Announcer : MonoBehaviour {
         //taskDuration = -0.5f*(taskNum) + 30f;
         //Debug.Log("Current time for Task "+taskNum+": "+taskDuration);
         taskAudioSource.Play();
+        timer = taskDuration;
         //if failedTasks >= 1, change "Yellow" to "Glass"
         if (failedTasks >= 1)
         {
@@ -69,11 +80,16 @@ public class Announcer : MonoBehaviour {
         announcerText.transform.parent.gameObject.SetActive(true);
         // Pick a new random tile number (1–9) and wall color
 
-        // Shuffle tile number labels on the ground
-        if (tileController != null) {
+        /*Adjustments to difficulty*/
+        if (successfulTasks > 5) {  // Shuffle tile number labels on the ground after round 5
             tileController.ShuffleTileNumbers();
         }
-
+        if(successfulTasks > 1)
+        {
+            generatorController.generatorDrainRate *= 1.1f;
+            Debug.Log("Generator drain rate: " + generatorController.generatorDrainRate);
+        }
+        testText.text = "Successful Tasks: " + successfulTasks;
         // Display new task
         announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor} wall.";
         taskActive = true;
@@ -88,6 +104,9 @@ public class Announcer : MonoBehaviour {
 
         if (wallColor == currentTargetWallColor && tileNumber == currentTargetTile) {
             announcerText.text = "Subject has completed this task.";
+            successfulTasks++;
+            timer = 0;
+            //Debug.Log("Successful Task Count: " + successfulTasks);
             taskActive = false;
             taskAudioSource.Stop();
             if (taskTimerCoroutine != null)
@@ -109,23 +128,18 @@ public class Announcer : MonoBehaviour {
             failedTasks++;
             AdjustState();
             taskAudioSource.Stop();
-            // Random chance to break the generator
-            //if (generatorController != null && Random.value < failureChance)
-            //{
-            //    generatorController.BreakGenerator();
-            //}
             if(failedTasks == 1)
             {
-                //Give enough time for wall opening sequence to play
-                yield return new WaitForSeconds(34f);
+                generatorController.generatorIsPaused = true;   //Pause the generator from going down
+                yield return new WaitForSeconds(34f);           //Give enough time for wall opening sequence to play
+                generatorController.generatorIsPaused = false;  //Allow the generator to be turned back on
             }
             else
             {
+                //Nothing really added here unless timing needs to be added for a "cutscene" with dialogue for the other failedTask amounts
                 yield return new WaitForSeconds(5f);
             }
             GiveNextTask();
-
-            //Invoke(nameof(GiveNewTask), displayTime);
         }
     }
     /**
@@ -189,9 +203,13 @@ public class Announcer : MonoBehaviour {
              * As a reminder, performing the tasks incorrectly is not advised for your safety*/
             StartCoroutine(HandleError1Dialogue());
         }
+        else if (failedTasks == 2)
+        {
+            simonReference.triggerSecondErrorMovement();
+        }
         else
         {
-            //get monster closer, if failedTasks
+            /*ADD DEATH/FAIL SEQUENCE TO THIS LINE, LINE ABOVE CAN BE DISREGUARDED*/
         }
     }
 
