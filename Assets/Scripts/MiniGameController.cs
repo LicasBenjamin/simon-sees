@@ -10,7 +10,8 @@ public class MiniGameController : MonoBehaviour {
     public int targetCount = 5;
     public float lineSpeed = 400f;
     public int maxMisses = 3;
-    public AudioSource errorSound;
+    public AudioSource hitSound;    //For hitting a square in the minigame
+    public AudioSource errorSound;  //For missing in the minigame
     public GeneratorController generator;
 
     private List<GameObject> activeTargets = new List<GameObject>();
@@ -60,7 +61,7 @@ public class MiniGameController : MonoBehaviour {
 
             if (lineX >= targetX - halfWidth && lineX <= targetX + halfWidth) {
                 Debug.Log("Target HIT: " + target.name);
-
+                hitSound.Play();
                 // ✅ Remove target before fading it
                 activeTargets.Remove(target);
                 StartCoroutine(FadeAndRemoveTarget(target));
