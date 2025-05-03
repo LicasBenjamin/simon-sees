@@ -51,6 +51,8 @@ public class Announcer : MonoBehaviour {
 
     void Start() {
         announcerText.gameObject.transform.parent.gameObject.SetActive(false);
+        // Manually assign wall colors based on their initial materials
+        ShuffleWallColors();
     }
     private void Update()
     {
@@ -69,30 +71,41 @@ public class Announcer : MonoBehaviour {
         currentTargetTile = Random.Range(1, totalTiles + 1);
         taskAudioSource.Play();
         timer = taskDuration;
-        if (tileController != null) {
-            tileController.ShuffleTileNumbers();
-        }
-
-        ShuffleWallColors();
-
-        List<string> availableColors = new List<string>(currentColorToWall.Keys);
-
-        if (failedTasks >= 1 && availableColors.Contains("Yellow")) {
-            availableColors.Remove("Yellow");
-            availableColors.Add("Glass");
-        }
-
-        currentTargetWallColor = availableColors[Random.Range(0, availableColors.Count)];
 
         /*Adjustments to difficulty*/
-        if (successfulTasks > 5) {  // Shuffle tile number labels on the ground after round 5
-            tileController.ShuffleTileNumbers();
-        }
-        if(successfulTasks > 1)
+
+        //Increase the generator's drain rate
+        if (successfulTasks > 1)
         {
             generatorController.generatorDrainRate *= 1.1f;
             Debug.Log("Generator drain rate: " + generatorController.generatorDrainRate);
         }
+        // Shuffle tile number labels on the ground after round 5
+        if (successfulTasks > 5) 
+        {  
+            tileController.ShuffleTileNumbers();
+        }
+        // Shuffle wall colors after round 10
+        if (successfulTasks > 10)
+        {
+            ShuffleWallColors();
+        }
+
+        /*ShuffleWallColors(); */
+
+        List<string> availableColors = new List<string>(currentColorToWall.Keys);
+
+        if (failedTasks >= 1 && availableColors.Contains("Yellow"))
+        {
+            availableColors.Remove("Yellow");
+            availableColors.Add("Glass");
+        }
+
+        int tempRange = Random.Range(0, availableColors.Count);
+        Debug.Log("temp range generated: " + tempRange);
+        Debug.Log("My List: " + string.Join(", ", availableColors));
+        currentTargetWallColor = availableColors[tempRange];
+
         testText.text = "Successful Tasks: " + successfulTasks;
         // Display new task
         announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
