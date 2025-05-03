@@ -9,12 +9,10 @@ public class Announcer : MonoBehaviour {
     public float displayTime = 5f;
 
     [Header("Task Settings")]
-    public string[] wallColors = { "Red", "Blue", "Green", "Yellow" };
     public int currentTargetTile = 0;
     public string currentTargetWallColor = "";
     public bool taskActive = false;
 
-    private string[] colors = { "Red", "Blue", "Green", "Yellow" };
     private int totalTiles = 9;
     private float taskDuration = 25f;
 
@@ -25,25 +23,32 @@ public class Announcer : MonoBehaviour {
     [Header("Task Time Running Out Sound")]
     public AudioSource taskAudioSource;
     public bool isFirstTimeCalled = false;
+
     [Header("Central Game State Variables")]
     public int taskNum = -1;
     public int failedTasks = 0;
 
     [Header("Tile Logic")]
-    public TileController tileController; // ✅ Drag your TileController here in Inspector
+    public TileController tileController;
     private Coroutine taskTimerCoroutine;
 
     [Header("Local References")]
     public YellowWall yellowWallReference;
 
+    [Header("Wall Color Randomization")]
+    public List<Renderer> wallRenderers;  // Drag the 4 wall Renderers here
+    public Material redMat;
+    public Material greenMat;
+    public Material blueMat;
+    public Material yellowMat;
+
+    private Dictionary<string, Renderer> currentColorToWall = new Dictionary<string, Renderer>();
+
     void Start() {
-        //announcerText.text = "Welcome, test subject.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(false);
-        //Invoke(nameof(GiveNextTask), displayTime);
     }
 
-    public void beginAnnouncer()
-    {
+    public void beginAnnouncer() {
         announcerText.text = "Welcome, test subject.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(true);
         Invoke(nameof(GiveNextTask), displayTime);
@@ -51,34 +56,27 @@ public class Announcer : MonoBehaviour {
 
     void GiveNextTask() {
         announcerText.gameObject.transform.parent.gameObject.SetActive(true);
-        currentTargetWallColor = colors[Random.Range(0, colors.Length)];
         currentTargetTile = Random.Range(1, totalTiles + 1);
-        //taskNum++;
-        //taskDuration = -0.5f*(taskNum) + 30f;
-        //Debug.Log("Current time for Task "+taskNum+": "+taskDuration);
         taskAudioSource.Play();
-        //if failedTasks >= 1, change "Yellow" to "Glass"
-        if (failedTasks >= 1)
-        {
-            if(currentTargetWallColor == "Yellow")
-            {
-                currentTargetWallColor = "Glass";
-            }
-        }
-        announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
-        announcerText.transform.parent.gameObject.SetActive(true);
-        // Pick a new random tile number (1–9) and wall color
 
-        // Shuffle tile number labels on the ground
         if (tileController != null) {
             tileController.ShuffleTileNumbers();
         }
 
-        // Display new task
-        announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor} wall.";
+        ShuffleWallColors();
+
+        List<string> availableColors = new List<string>(currentColorToWall.Keys);
+
+        if (failedTasks >= 1 && availableColors.Contains("Yellow")) {
+            availableColors.Remove("Yellow");
+            availableColors.Add("Glass");
+        }
+
+        currentTargetWallColor = availableColors[Random.Range(0, availableColors.Count)];
+
+        announcerText.text = $"Stand on tile {currentTargetTile} and look at the {currentTargetWallColor.ToLower()} wall.";
         taskActive = true;
 
-        // Start timer for failure
         if (taskTimerCoroutine != null) StopCoroutine(taskTimerCoroutine);
         taskTimerCoroutine = StartCoroutine(TaskTimer());
     }
@@ -102,101 +100,34 @@ public class Announcer : MonoBehaviour {
     IEnumerator TaskTimer() {
         yield return new WaitForSeconds(taskDuration);
 
-        if (taskActive)
-        {
+        if (taskActive) {
             taskActive = false;
             announcerText.text = $"Subject has failed this task.";
             failedTasks++;
             AdjustState();
             taskAudioSource.Stop();
-            // Random chance to break the generator
-            //if (generatorController != null && Random.value < failureChance)
-            //{
-            //    generatorController.BreakGenerator();
-            //}
-            if(failedTasks == 1)
-            {
-                //Give enough time for wall opening sequence to play
+
+            if (failedTasks == 1) {
                 yield return new WaitForSeconds(34f);
-            }
-            else
-            {
+            } else {
                 yield return new WaitForSeconds(5f);
             }
             GiveNextTask();
-
-            //Invoke(nameof(GiveNewTask), displayTime);
         }
     }
-    /**
-    void CheckIfTaskFailed() {
-        if (!taskActive) return;
-        TaskFailed();
-    }
-
-
-    void TaskFailed() {
-        taskActive = false;
-        CancelInvoke(nameof(CheckIfTaskFailed));
-
-        taskAudioSource.Stop();
-
-        announcerText.text = "Player has failed this task.";
-        announcerText.transform.parent.gameObject.SetActive(true);
-
-        //Add to the failed tasks counter and adjust state accordingly
-        failedTasks++;
-        AdjustState();
-
-        Debug.Log("Task failed.");
-
-        //Below is randomly generating odds to break the generator
-        if (generatorController != null) {
-            if (generatorController.IsGeneratorOn()) {
-                float roll = Random.value;
-                Debug.Log($"Failure chance roll: {roll} (threshold: {failureChance})");
-
-                if (roll < failureChance) {
-                    Debug.Log("Announcer decided to break the generator.");
-                    //generatorController.BreakGenerator();
-                }
-            } else {
-                Debug.Log("Generator is already off. Skipping break attempt.");
-                // Random chance to break the generator
-                //if (generatorController != null && Random.value < failureChance) {
-                //    generatorController.BreakGenerator();
-            }
-
-            yield return new WaitForSeconds(5f);
-            GiveNextTask();
-        }
-    }*/
 
     IEnumerator NextTaskAfterDelay() {
         yield return new WaitForSeconds(5f);
         GiveNextTask();
     }
 
-    void AdjustState()
-    {
-        if(failedTasks == 1)
-        {
-            //open door, activate glass as the replacement for "yellow" wall
-            /* Script:
-             * Looks like Simon is upset now, to monitor him one of the walls
-             * is now going to be referred to as the “glass wall,” it should
-             * be self-explanatory Subject 31D.
-             * As a reminder, performing the tasks incorrectly is not advised for your safety*/
+    void AdjustState() {
+        if (failedTasks == 1) {
             StartCoroutine(HandleError1Dialogue());
-        }
-        else
-        {
-            //get monster closer, if failedTasks
         }
     }
 
-    IEnumerator HandleError1Dialogue()
-    {
+    IEnumerator HandleError1Dialogue() {
         yield return Speak("", 0.5f);
         StartCoroutine(yellowWallReference.OpenDoor());
         yield return Speak("", 15f);
@@ -207,9 +138,34 @@ public class Announcer : MonoBehaviour {
         yield return Speak("", 0.5f);
     }
 
-    IEnumerator Speak(string speech, float seconds)
-    {
+    IEnumerator Speak(string speech, float seconds) {
         announcerText.text = speech;
         yield return new WaitForSeconds(seconds);
+    }
+
+    void ShuffleWallColors() {
+        currentColorToWall.Clear();
+
+        List<(string name, Material mat)> colorPool = new List<(string, Material)> {
+            ("Red", redMat),
+            ("Green", greenMat),
+            ("Blue", blueMat),
+            ("Yellow", yellowMat)
+        };
+
+        foreach (Renderer rend in wallRenderers) {
+            if (!rend.gameObject.activeInHierarchy) continue; // ✅ skip hidden walls
+            if (colorPool.Count == 0) break;
+
+            int index = Random.Range(0, colorPool.Count);
+            var (colorName, mat) = colorPool[index];
+
+            rend.material = mat;
+            currentColorToWall[colorName] = rend;
+
+            colorPool.RemoveAt(index);
+
+            Debug.Log($"[Wall Color] Assigned {colorName} to {rend.gameObject.name}");
+        }
     }
 }

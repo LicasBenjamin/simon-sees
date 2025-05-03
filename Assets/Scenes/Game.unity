@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731713, g: 0.1341474, b: 0.12107861, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -8701,11 +8701,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   announcerText: {fileID: 65928408}
   displayTime: 5
-  wallColors:
-  - Red
-  - Blue
-  - Green
-  - Yellow
   currentTargetTile: 0
   currentTargetWallColor: 
   taskActive: 0
@@ -8717,6 +8712,15 @@ MonoBehaviour:
   failedTasks: 0
   tileController: {fileID: 814117841}
   yellowWallReference: {fileID: 1146850151}
+  wallRenderers:
+  - {fileID: 1493515085}
+  - {fileID: 1285371376}
+  - {fileID: 1244900641}
+  - {fileID: 1146850149}
+  redMat: {fileID: 2100000, guid: 862391d550a95794185b3ba9a231529c, type: 2}
+  greenMat: {fileID: 2100000, guid: 0c8d4cd3ba890e44fb131b5c52dcf2e1, type: 2}
+  blueMat: {fileID: 2100000, guid: 67f4666c5b446a242ba4f124dc38f129, type: 2}
+  yellowMat: {fileID: 2100000, guid: cf4cb3a26bf4632439765e61e2279dc7, type: 2}
 --- !u!4 &891919359
 Transform:
   m_ObjectHideFlags: 0

@@ -8,27 +8,46 @@ public class YellowWall : MonoBehaviour
     [SerializeField] private AudioSource doorSound;
     [SerializeField] private ReflectionProbe probe;
     [SerializeField] private GameObject glassWall;
+
     private void Start()
     {
         glassWall.SetActive(false);
+
+        // Log current color to help debug if needed
+        var wallColor = GetComponent<Renderer>()?.material?.color;
+        if (wallColor != null)
+        {
+            Debug.Log($"[YellowWall] Current wall color is: {wallColor}");
+        }
     }
-    // Update is called once per frame
-    void Update()
+
+    private void Update()
     {
+        // Manual test input
         if (Input.GetKeyDown(KeyCode.F))
         {
             StartCoroutine(OpenDoor());
         }
     }
+
     public IEnumerator OpenDoor()
     {
+        Debug.Log("[YellowWall] Sliding wall opening...");
+
+        // Show the glass wall
         glassWall.SetActive(true);
-        doorSound.Play();
+
+        // Play door sound
+        if (doorSound != null)
+            doorSound.Play();
+
+        // Wait before moving (to sync with sound)
         yield return new WaitForSeconds(7);
 
+        // Slide the wall upward
         Vector3 startPos = transform.position;
         Vector3 endPos = startPos + new Vector3(0, 15, 0);
-        float duration = 13f; // how long the door should take to open
+        float duration = 13f;
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -36,10 +55,20 @@ public class YellowWall : MonoBehaviour
             transform.position = Vector3.Lerp(startPos, endPos, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
-            probe.RenderProbe();
+
+            if (probe != null)
+                probe.RenderProbe();
         }
-        probe.RenderProbe();
-        transform.position = endPos; // Ensure it ends at the exact final position
-        gameObject.SetActive(false); // Disable door so player cannot hover over it
+
+        // Ensure final position is exact
+        transform.position = endPos;
+
+        if (probe != null)
+            probe.RenderProbe();
+
+        // Disable the wall so it can't be interacted with again
+        gameObject.SetActive(false);
+
+        Debug.Log("[YellowWall] Wall finished sliding and is now inactive.");
     }
 }
