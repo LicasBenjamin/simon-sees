@@ -60,8 +60,7 @@ public class GeneratorController : MonoBehaviour {
         //testText = GetComponent<TextMeshProUGUI>();
         //generatorDurationLeft = 0f;
         //generatorMaxDuration = 45f;
-
-}
+    }
 
     void Update() {
         if (!generatorIsPaused)
@@ -79,9 +78,9 @@ public class GeneratorController : MonoBehaviour {
                 Debug.Log("Mini-game should start now");
                 StartMiniGame();
             }
-            else
+            else //SPAMMING CALLS THIS CONSTANTlY, FIX
             {
-                StartCoroutine(RepairGenerator());
+               //StartCoroutine(RepairGenerator());
             }
         }
         if (generatorDurationLeft <= stopSound.clip.length && !soundEffectPlayed)

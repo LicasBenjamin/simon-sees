@@ -48,6 +48,7 @@ public class Announcer : MonoBehaviour {
     public Material yellowMat;
 
     private Dictionary<string, Renderer> currentColorToWall = new Dictionary<string, Renderer>();
+    private string invalidColor = "";
 
     void Start() {
         announcerText.gameObject.transform.parent.gameObject.SetActive(false);
@@ -63,6 +64,7 @@ public class Announcer : MonoBehaviour {
     public void beginAnnouncer() {
         announcerText.text = "Welcome, test subject.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(true);
+        //add tutorial information here
         Invoke(nameof(GiveNextTask), displayTime);
     }
 
@@ -77,7 +79,7 @@ public class Announcer : MonoBehaviour {
         //Increase the generator's drain rate
         if (successfulTasks > 1)
         {
-            generatorController.generatorDrainRate *= 1.1f;
+            generatorController.generatorDrainRate += 0.1f;
             Debug.Log("Generator drain rate: " + generatorController.generatorDrainRate);
         }
         // Shuffle tile number labels on the ground after round 5
@@ -91,13 +93,14 @@ public class Announcer : MonoBehaviour {
             ShuffleWallColors();
         }
 
-        /*ShuffleWallColors(); */
+        //ShuffleWallColors();
 
         List<string> availableColors = new List<string>(currentColorToWall.Keys);
 
-        if (failedTasks >= 1 && availableColors.Contains("Yellow"))
+        if (failedTasks >= 1)
         {
-            availableColors.Remove("Yellow");
+            //swap raised wall with glass wall
+            availableColors.Remove(invalidColor);
             availableColors.Add("Glass");
         }
 
@@ -121,6 +124,7 @@ public class Announcer : MonoBehaviour {
         if (wallColor == currentTargetWallColor && tileNumber == currentTargetTile) {
             announcerText.text = "Subject has completed this task.";
             successfulTasks++;
+            generatorController.miniGameUI.GetComponent<MiniGameController>().lineSpeed += 20;
             timer = 0;
             //Debug.Log("Successful Task Count: " + successfulTasks);
             taskActive = false;
@@ -173,7 +177,7 @@ public class Announcer : MonoBehaviour {
         }
         else
         {
-            /*ADD DEATH/FAIL SEQUENCE TO THIS LINE, LINE ABOVE CAN BE DISREGUARDED*/
+            /*ADD DEATH/FAIL SEQUENCE TO THIS LINE*/
         }
     }
 
@@ -204,11 +208,18 @@ public class Announcer : MonoBehaviour {
         };
 
         foreach (Renderer rend in wallRenderers) {
-            if (!rend.gameObject.activeInHierarchy) continue; // ✅ skip hidden walls
-            if (colorPool.Count == 0) break;
+            //if (!rend.gameObject.activeInHierarchy) continue; // ✅ skip hidden walls
+            //if (colorPool.Count == 0) break;
 
             int index = Random.Range(0, colorPool.Count);
+            //Debug.Log("ColorPool [" + index + "]: " + colorPool[index].name);
+
             var (colorName, mat) = colorPool[index];
+
+            if(rend.gameObject.GetComponent<YellowWall>() != null)
+            {
+                invalidColor = colorPool[index].name;
+            }
 
             rend.material = mat;
             currentColorToWall[colorName] = rend;

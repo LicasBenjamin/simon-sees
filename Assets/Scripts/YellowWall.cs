@@ -24,10 +24,10 @@ public class YellowWall : MonoBehaviour
     private void Update()
     {
         // Manual test input
-        if (Input.GetKeyDown(KeyCode.F))
+        /*if (Input.GetKeyDown(KeyCode.F))
         {
             StartCoroutine(OpenDoor());
-        }
+        }*/
     }
 
     public IEnumerator OpenDoor()
