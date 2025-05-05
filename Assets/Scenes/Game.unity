@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731713, g: 0.1341474, b: 0.12107861, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4152,7 +4152,7 @@ MonoBehaviour:
   line: {fileID: 1646257227}
   targetPrefab: {fileID: 5928080618120704892, guid: ceeda18e001cb4be7874ca71a82095ac,
     type: 3}
-  targetCount: 5
+  targetCount: 1
   lineSpeed: 400
   maxMisses: 3
   hitSound: {fileID: 1575157112}

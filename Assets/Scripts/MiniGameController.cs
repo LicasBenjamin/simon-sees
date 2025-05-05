@@ -121,7 +121,12 @@ public class MiniGameController : MonoBehaviour {
         float barWidth = barArea.rect.width;
         float padding = 40f;
         float usableWidth = barWidth - (padding * 2);
-        float spacing = usableWidth / (targetCount - 1);
+        float spacing = 0f;
+        if (targetCount > 1)
+        {
+            spacing = usableWidth / (targetCount - 1);
+        }
+        float startX = (targetCount > 1) ? -((targetCount - 1) * spacing) / 2f : 0f;
 
         for (int i = 0; i < targetCount; i++) {
             GameObject newTarget = Instantiate(targetPrefab, barArea);
@@ -132,7 +137,9 @@ public class MiniGameController : MonoBehaviour {
             }
 
             RectTransform rect = newTarget.GetComponent<RectTransform>();
-            float xPos = -barWidth / 2 + padding + (spacing * i);
+            //adjusted this to work with only 1 targetCount
+            //float xPos = -barWidth / 2 + padding + (spacing * i);
+            float xPos = startX + (spacing * i);
             rect.localPosition = new Vector3(xPos, 0f, 0f);
 
             // Reset outline on new target
