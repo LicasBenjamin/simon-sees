@@ -92,7 +92,11 @@ public class Announcer : MonoBehaviour {
         {
             ShuffleWallColors();
         }
-
+        // Make tiles in roman numerals
+        if(successfulTasks > 15)
+        {
+            tileController.RomanizeNumbers();
+        }
         //ShuffleWallColors();
 
         List<string> availableColors = new List<string>(currentColorToWall.Keys);
