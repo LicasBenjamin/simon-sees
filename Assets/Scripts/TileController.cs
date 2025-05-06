@@ -29,18 +29,4 @@ public class TileController : MonoBehaviour {
             numbers.RemoveAt(randIndex);
         }
     }
-
-    public void RomanizeNumbers()
-    {
-        string[] romanNumerals = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
-        for (int i = 0; i<tileLabels.Length; i++)
-        {
-            tileLabels[i].fontSize = 45;
-            tileLabels[i].fontStyle = FontStyles.Normal;
-            //assuming that text is an integer
-            int indexTileShouldBe = int.Parse(tileLabels[i].text);
-
-            tileLabels[i].text = romanNumerals[indexTileShouldBe - 1];
-        }
-    }
 }
