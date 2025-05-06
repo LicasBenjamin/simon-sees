@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class Announcer : MonoBehaviour {
     [Header("UI")]
@@ -77,21 +78,28 @@ public class Announcer : MonoBehaviour {
         /*Adjustments to difficulty*/
 
         //Increase the generator's drain rate
-        if (successfulTasks > 1)
+        if (successfulTasks > 4)
         {
             generatorController.generatorDrainRate += 0.1f;
             Debug.Log("Generator drain rate: " + generatorController.generatorDrainRate);
         }
         // Shuffle tile number labels on the ground after round 5
-        if (successfulTasks > 5) 
+        if (successfulTasks > 8) 
         {  
             tileController.ShuffleTileNumbers();
         }
         // Shuffle wall colors after round 10
-        if (successfulTasks > 10)
+        if (successfulTasks > 12)
         {
             ShuffleWallColors();
         }
+        if (successfulTasks == 15)
+        {
+            Debug.Log("Switching to Success Cutscene...");
+            SceneManager.LoadScene("SuccessCutscene");
+            return;  // Prevents further logic from running after the scene change
+        }
+
 
         //ShuffleWallColors();
 
@@ -177,7 +185,7 @@ public class Announcer : MonoBehaviour {
         }
         else
         {
-            /*ADD DEATH/FAIL SEQUENCE TO THIS LINE*/
+            SceneManager.LoadScene("FailScene");
         }
     }
 
