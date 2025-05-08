@@ -52,7 +52,7 @@ public class Announcer : MonoBehaviour {
     [Header("Jump Scare Stuff")]
     public ScreenFader screenFader;
     public AudioSource wallAudioSource;
-    public AudioClip glassShattering;
+    public AudioSource glassShattering;
 
     private Dictionary<string, Renderer> currentColorToWall = new Dictionary<string, Renderer>();
     private string invalidColor = "";
@@ -84,20 +84,25 @@ public class Announcer : MonoBehaviour {
         /*Adjustments to difficulty*/
 
         //Increase the generator's drain rate
-        if (successfulTasks > 4)
+        if (successfulTasks > 1)
         {
             generatorController.generatorDrainRate += 0.1f;
             Debug.Log("Generator drain rate: " + generatorController.generatorDrainRate);
         }
-        // Shuffle tile number labels on the ground after round 5
-        if (successfulTasks > 8) 
+        // Shuffle tile number labels on the ground after round 4
+        if (successfulTasks >= 4) 
         {  
             tileController.ShuffleTileNumbers();
         }
-        // Shuffle wall colors after round 10
-        if (successfulTasks > 12)
+        // Shuffle wall colors after round 8
+        if (successfulTasks >= 8)
         {
             ShuffleWallColors();
+        }
+        // Make tiles in roman numerals after round 12
+        if (successfulTasks >= 12)
+        {
+            tileController.RomanizeNumbers();
         }
         if (successfulTasks == 15)
         {
@@ -201,8 +206,8 @@ public class Announcer : MonoBehaviour {
     {
         screenFader.FadeToBlack();
         yield return new WaitForSeconds(screenFader.fadeDuration);
-        wallAudioSource.PlayOneShot(glassShattering);
-        yield return new WaitForSeconds(glassShattering.length);
+        glassShattering.Play();
+        yield return new WaitForSeconds(glassShattering.clip.length);
         SceneManager.LoadScene("Jumpscare");
     }
 
