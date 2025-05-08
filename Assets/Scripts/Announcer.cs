@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class Announcer : MonoBehaviour {
     [Header("UI")]
@@ -48,6 +49,11 @@ public class Announcer : MonoBehaviour {
     public Material blueMat;
     public Material yellowMat;
 
+    [Header("Jump Scare Stuff")]
+    public ScreenFader screenFader;
+    public AudioSource wallAudioSource;
+    public AudioClip glassShattering;
+
     private Dictionary<string, Renderer> currentColorToWall = new Dictionary<string, Renderer>();
     private string invalidColor = "";
 
@@ -63,7 +69,7 @@ public class Announcer : MonoBehaviour {
     }
 
     public void beginAnnouncer() {
-        announcerText.text = "Welcome, test subject.";
+        announcerText.text = "Welcome, to the experiment Subject 31D.";
         announcerText.gameObject.transform.parent.gameObject.SetActive(true);
         //add tutorial information here
         Invoke(nameof(GiveNextTask), displayTime);
@@ -175,8 +181,10 @@ public class Announcer : MonoBehaviour {
         GiveNextTask();
     }
 
-    void AdjustState() {
-        if (failedTasks == 1) {
+    void AdjustState()
+    {
+        if (failedTasks == 1)
+        {
             StartCoroutine(HandleError1Dialogue());
         }
         else if (failedTasks == 2)
@@ -185,8 +193,17 @@ public class Announcer : MonoBehaviour {
         }
         else
         {
-            SceneManager.LoadScene("FailScene");
+            StartCoroutine(JumpscareTransistion());
         }
+    }
+
+    IEnumerator JumpscareTransistion()
+    {
+        screenFader.FadeToBlack();
+        yield return new WaitForSeconds(screenFader.fadeDuration);
+        wallAudioSource.PlayOneShot(glassShattering);
+        yield return new WaitForSeconds(glassShattering.length);
+        SceneManager.LoadScene("Jumpscare");
     }
 
     IEnumerator HandleError1Dialogue() {

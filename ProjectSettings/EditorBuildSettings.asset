@@ -17,7 +17,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SuccessCutscene.unity
     guid: 36c3e2a18b70b7842808752d4fe42692
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/FailScene.unity
     guid: 9169303f47437164e9429d1a58f8931d
+  - enabled: 1
+    path: Assets/Scenes/Jumpscare.unity
+    guid: b549a20264c6a0c48be67b55a10bdd46
   m_configObjects: {}
